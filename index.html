@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js (mağaza 3D önizleme) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -257,6 +259,52 @@
         }
         .target-line { stroke: #78716c; stroke-width: 3; stroke-dasharray: 6 5; opacity: 0.6; }
         .target-line.revealed { stroke: #c59b27; stroke-dasharray: none; opacity: 1; }
+
+        /* ---------- MAĞAZA ---------- */
+        .shop-btn-active {
+            border-color: #c59b27 !important;
+            color: #f4d77a !important;
+            box-shadow: 0 0 12px rgba(197, 155, 39, 0.5);
+        }
+        .shop-chip {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            padding: 5px 10px;
+            border-radius: 2px;
+            border: 1px solid rgba(120,110,90,0.5);
+            background: rgba(232,227,213,0.8);
+            color: #57534e;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .shop-chip:hover { background: #d3cbbe; }
+        .shop-chip.active {
+            background: linear-gradient(180deg, #2b2927 0%, #121110 100%);
+            color: #f4d77a;
+            border-color: #c59b27;
+        }
+        .shop-card {
+            position: relative;
+            border: 1px solid rgba(120,110,90,0.45);
+            border-radius: 4px;
+            background: rgba(232,227,213,0.85);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            text-align: left;
+        }
+        .shop-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.2); }
+        .shop-card.sel { border-color: var(--rar); box-shadow: 0 0 0 2px var(--rar), 0 6px 16px rgba(0,0,0,0.25); }
+        .shop-thumb {
+            height: 112px;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 60%, var(--rar-soft) 0%, #1c1917 75%);
+        }
+        .shop-thumb img { width: 100%; height: 100%; object-fit: contain; }
+        .shop-stat-bar { height: 5px; background: rgba(120,110,90,0.3); border-radius: 3px; overflow: hidden; }
+        .shop-stat-fill { height: 100%; border-radius: 3px; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
@@ -289,19 +337,7 @@
         </nav>
 
         <div class="flex items-center space-x-6 text-xs font-medium">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-neutral-400">Altın:</span>
-                    <span class="font-bold text-amber-400 font-mono">85,250</span>
-                    <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
-                </div>
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-neutral-400">Kristal:</span>
-                    <span class="font-bold text-cyan-300 font-mono">42</span>
-                    <i class="fa-solid fa-gem text-cyan-300 text-xs"></i>
-                </div>
-            </div>
-            <button onclick="playSFX('click')" class="flex items-center space-x-1.5 bg-neutral-800 hover:bg-neutral-700 px-3 py-1 rounded text-neutral-300 transition border border-neutral-700">
+            <button id="tabBtnShop" onclick="setTab('shop')" class="flex items-center space-x-1.5 bg-neutral-800 hover:bg-neutral-700 px-3 py-1 rounded text-neutral-300 transition border border-neutral-700">
                 <i class="fa-solid fa-store text-xs"></i>
                 <span class="font-cinzel tracking-wider text-xs">MAĞAZA</span>
             </button>
@@ -543,6 +579,58 @@
                 </div>
             </section>
         </div>
+    </main>
+
+    <!-- ===================== MAĞAZA GÖRÜNÜMÜ (3D ÖNİZLEME) ===================== -->
+    <main id="shopView" class="hidden relative flex-1 w-full paper-bg overflow-hidden flex flex-col lg:flex-row p-4 lg:p-6 gap-4 lg:gap-6">
+
+        <!-- Sol: kategori + ürün kartları -->
+        <section class="w-full lg:w-[38%] shrink-0 min-h-0 flex flex-col bg-parchment-light/85 backdrop-blur-sm rounded border border-neutral-300 shadow-md p-3 z-10 overflow-hidden">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <span class="font-cinzel font-black text-sm tracking-widest text-ink-black"><i class="fa-solid fa-store text-vermilion mr-2"></i>MAĞAZA</span>
+                <span class="flex items-center space-x-1.5 text-[10px] font-cinzel font-bold tracking-widest bg-ink-black text-amber-200 px-2 py-0.5 rounded">
+                    <i class="fa-solid fa-coins"></i><span>PARA BİRİMİ: MON</span>
+                </span>
+            </div>
+            <div class="text-[10px] text-stone-500 px-1 mb-2 leading-snug">
+                <i class="fa-solid fa-eye mr-1"></i>Önizleme modu: ürünler döndürülerek incelenir, satın alınamaz.
+            </div>
+            <div id="shopCats" class="flex flex-wrap gap-1.5 mb-3"></div>
+            <div id="shopGrid" class="flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 gap-2 content-start"></div>
+        </section>
+
+        <!-- Sağ: 3D görüntüleyici + detay -->
+        <section class="flex-1 min-w-0 min-h-0 flex flex-col gap-3 z-10">
+            <div id="shopViewer" class="relative flex-1 min-h-[300px] rounded border-2 border-gold-accent/60 shadow-xl overflow-hidden bg-ink-black">
+                <canvas id="shopCanvas" class="absolute inset-0 w-full h-full block touch-none" style="cursor:grab"></canvas>
+
+                <div class="absolute top-3 left-4 pointer-events-none">
+                    <div id="shopViewRarity" class="text-[10px] font-cinzel font-bold tracking-[0.3em]"></div>
+                    <div id="shopViewName" class="text-xl md:text-2xl font-cinzel font-black tracking-wide text-white drop-shadow"></div>
+                </div>
+
+                <div class="absolute top-3 right-3 flex items-center space-x-1.5">
+                    <button onclick="shopToggleAuto()" id="shopBtnAuto" title="Otomatik döndür" class="w-8 h-8 rounded bg-black/55 hover:bg-black/80 text-amber-200 border border-amber-500/40 text-xs transition"><i class="fa-solid fa-rotate"></i></button>
+                    <button onclick="shopZoom(-0.12)" title="Yakınlaştır" class="w-8 h-8 rounded bg-black/55 hover:bg-black/80 text-amber-200 border border-amber-500/40 text-xs transition"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button onclick="shopZoom(0.12)" title="Uzaklaştır" class="w-8 h-8 rounded bg-black/55 hover:bg-black/80 text-amber-200 border border-amber-500/40 text-xs transition"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <button onclick="shopResetView()" title="Görünümü sıfırla" class="w-8 h-8 rounded bg-black/55 hover:bg-black/80 text-amber-200 border border-amber-500/40 text-xs transition"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                </div>
+
+                <div class="absolute bottom-2 inset-x-0 text-center pointer-events-none text-[10px] font-cinzel tracking-widest text-neutral-400">
+                    SÜRÜKLE: DÖNDÜR · TEKERLEK: YAKINLAŞTIR
+                </div>
+
+                <div id="shopNoGL" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-neutral-300">
+                    <i class="fa-solid fa-cube text-5xl mb-3 text-neutral-500"></i>
+                    <div class="font-cinzel font-bold tracking-widest text-sm mb-1">3D ÖNİZLEME BAŞLATILAMADI</div>
+                    <div class="text-xs text-neutral-400 max-w-xs">Tarayıcın WebGL desteklemiyor veya Three.js yüklenemedi. İnternet bağlantını kontrol edip sayfayı yenile.</div>
+                </div>
+            </div>
+
+            <div class="shrink-0 bg-parchment-light/95 backdrop-blur-md rounded border border-neutral-300 shadow-xl p-4 max-h-[42%] overflow-y-auto">
+                <div id="shopDetail" class="animate-fade-in"></div>
+            </div>
+        </section>
     </main>
 
     <footer class="w-full bg-ink-black text-neutral-300 px-6 py-2 flex items-center justify-between text-xs font-cinzel tracking-wider border-t border-neutral-800 z-30 shrink-0">
@@ -852,7 +940,8 @@
             const views = {
                 codex: document.getElementById('codexView'),
                 skills: document.getElementById('skillsView'),
-                log: document.getElementById('logView')
+                log: document.getElementById('logView'),
+                shop: document.getElementById('shopView')
             };
             const buttons = {
                 codex: document.getElementById('tabBtnCodex'),
@@ -865,13 +954,23 @@
 
             Object.keys(views).forEach(k => {
                 views[k].classList.add('hidden');
-                buttons[k].className = inactive.join(' ');
+                if (buttons[k]) buttons[k].className = inactive.join(' ');
             });
             views[tab].classList.remove('hidden');
-            buttons[tab].className = activeCls.join(' ');
+            if (buttons[tab]) buttons[tab].className = activeCls.join(' ');
+
+            // Mağaza butonu aktif görünümü
+            const shopBtn = document.getElementById('tabBtnShop');
+            if (shopBtn) {
+                shopBtn.classList.toggle('shop-btn-active', tab === 'shop');
+            }
+
+            // Mağaza 3D döngüsü sadece mağaza açıkken çalışır
+            if (typeof shopStop === 'function') shopStop();
 
             if (tab === 'skills') renderSkillView();
             if (tab === 'log') renderLogView();
+            if (tab === 'shop' && typeof renderShopView === 'function') renderShopView();
         }
 
         /* ============================================================
@@ -1309,7 +1408,7 @@
            type   : 'ana' veya 'yan'
            status : 'aktif' (devam ediyor) | 'yeni' (yeni alındı) | 'tamamlandi'
            objectives: [{ text: 'Yapılacak şey', done: false }]  → done: true yapınca tik atılır
-           reward : { gold, xp, item }  (istemediğini boş bırak veya sil)
+           reward : { mon, xp, item }  (istemediğini boş bırak veya sil; mon = para birimi)
         */
         const questsData = [
             {
@@ -1325,7 +1424,7 @@
                     { text: 'İlk dairenin izini sür', done: false },
                     { text: 'Bir hedefin kimliğini öğren', done: false }
                 ],
-                reward: { gold: 2500, xp: 1200, item: 'Gölge Pelerini' }
+                reward: { mon: 2500, xp: 1200, item: 'Gölge Pelerini' }
             }
         ];
 
@@ -1510,7 +1609,8 @@
 
             const rewards = [];
             if (q.reward) {
-                if (q.reward.gold) rewards.push(`<span class="flex items-center space-x-1.5"><i class="fa-solid fa-coins text-amber-500"></i><b>${q.reward.gold.toLocaleString('tr-TR')}</b><span class="text-stone-500">Altın</span></span>`);
+                const monReward = q.reward.mon != null ? q.reward.mon : q.reward.gold;
+                if (monReward) rewards.push(`<span class="flex items-center space-x-1.5"><i class="fa-solid fa-coins text-amber-500"></i><b>${monReward.toLocaleString('tr-TR')}</b><span class="text-stone-500">Mon</span></span>`);
                 if (q.reward.xp) rewards.push(`<span class="flex items-center space-x-1.5"><i class="fa-solid fa-star text-vermilion"></i><b>${q.reward.xp.toLocaleString('tr-TR')}</b><span class="text-stone-500">XP</span></span>`);
                 if (q.reward.item) rewards.push(`<span class="flex items-center space-x-1.5"><i class="fa-solid fa-gem text-cyan-600"></i><b>${q.reward.item}</b></span>`);
             }
@@ -1945,6 +2045,14 @@
                 return;
             }
 
+            if (currentTab === 'shop') {
+                if (typeof shopMoveSelection === 'function') {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); shopMoveSelection(1); }
+                    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); shopMoveSelection(-1); }
+                }
+                return;
+            }
+
             if (currentTab === 'log') return;
 
             const allLocs = regionsData.flatMap(r => r.locations);
@@ -1964,6 +2072,1102 @@
             renderLocationList();
             selectLocation('wyvern');
         };
+    </script>
+
+    <!-- ===================== MAĞAZA SCRIPTİ (3D) ===================== -->
+    <script>
+/* ============================================================
+   ████  MAĞAZA VERİSİ — BURAYI DÜZENLE  ████
+   Para birimi: MON. Mağaza SADECE ÖNİZLEME: satın alma yok.
+
+   YENİ ÜRÜN EKLEMEK için shopItems dizisine bir blok ekle:
+     id     : benzersiz kısa ad ('ejderha-zirh')
+     name   : ürün adı
+     cat    : 'armor' | 'helmet' | 'sword' | 'kusari' | 'kunai'
+     rarity : 'common' | 'rare' | 'epic' | 'legendary'
+     price  : Mon cinsinden fiyat (sayı)
+     desc   : açıklama
+     stats  : { 'Savunma': 80, ... }   (0-100 arası değerler, istediğin kadar satır)
+     model  : 3D model ayarı (aşağıdaki ARM / helmet / kılıç ayarlarına bak; renkler 0xRRGGBB)
+
+   Zırh/miğfer renk ayarları (ARM): main (ana renk), trim (süs/altın), cloth (kumaş),
+     glow (parlayan renk), crest ('horns'|'crescent'|'dragon'|'flame'|'antlers'|'none'),
+     mask ('demon'|'plain'|'none'), back ('wings'|'cloak'|'banner'|'none'),
+     spikes (true/false), heavy (true/false), scales (true/false)
+   ============================================================ */
+
+const SHOP_RARITY = {
+    common:    { label: 'SIRADAN',  color: '#9ca3af' },
+    rare:      { label: 'NADİR',    color: '#3b82f6' },
+    epic:      { label: 'EPİK',     color: '#a855f7' },
+    legendary: { label: 'EFSANEVİ', color: '#f59e0b' }
+};
+
+const SHOP_CATS = [
+    { key: 'all',    name: 'TÜMÜ',       icon: 'fa-border-all' },
+    { key: 'armor',  name: 'ZIRHLAR',    icon: 'fa-shield-halved' },
+    { key: 'helmet', name: 'MİĞFERLER',  icon: 'fa-helmet-safety' },
+    { key: 'sword',  name: 'KILIÇLAR',   icon: 'fa-khanda' },
+    { key: 'kusari', name: 'KUSARİGAMA', icon: 'fa-link' },
+    { key: 'kunai',  name: 'KUNAİ',      icon: 'fa-location-arrow' }
+];
+
+/* ---------- Zırh / miğfer tema ayarları ---------- */
+const ARM = {
+    dragon:   { main: 0x9b1c1c, trim: 0xd4a017, cloth: 0x3b0a0a, glow: 0xff7a1a, crest: 'dragon',   mask: 'demon', back: 'wings',  spikes: true,  wing: 0x5a0f0f },
+    night:    { main: 0x1a1625, trim: 0x6d28d9, cloth: 0x0f0b1a, glow: 0xa855f7, crest: 'crescent', mask: 'plain', back: 'cloak' },
+    akagane:  { main: 0xc83823, trim: 0xd4a017, cloth: 0x7f1d1d, glow: 0xffcc66, crest: 'horns',    mask: 'demon', back: 'banner' },
+    ice:      { main: 0xdbeafe, trim: 0x60a5fa, cloth: 0x1e3a8a, glow: 0x67e8f9, crest: 'antlers',  mask: 'plain', back: 'cloak',  metal: 0.35, rough: 0.15 },
+    flower:   { main: 0x3f6b3a, trim: 0xf9a8d4, cloth: 0x14532d, glow: 0xfda4af, crest: 'flame',    mask: 'plain', back: 'cloak' },
+    iron:     { main: 0x4b5563, trim: 0xb45309, cloth: 0x292524, glow: 0xfb923c, crest: 'horns',    mask: 'demon', back: 'none',   heavy: true },
+    sand:     { main: 0xc9a24b, trim: 0x0f766e, cloth: 0x0f766e, glow: 0x5eead4, crest: 'crescent', mask: 'plain', back: 'banner' },
+    wyvern:   { main: 0x047857, trim: 0x34d399, cloth: 0x022c22, glow: 0x4ade80, crest: 'dragon',   mask: 'demon', back: 'wings',  spikes: true, scales: true, wing: 0x064e3b },
+    gothic:   { main: 0x2e1065, trim: 0xe5e7eb, cloth: 0x1e1b4b, glow: 0xc084fc, crest: 'flame',    mask: 'plain', back: 'cloak',  spikes: true },
+    sea:      { main: 0x1e3a5f, trim: 0xd4a017, cloth: 0x0c4a6e, glow: 0x38bdf8, crest: 'dragon',   mask: 'demon', back: 'banner' }
+};
+function armorModel(key) { return Object.assign({ type: 'armor' }, ARM[key]); }
+function helmetModel(key) { return Object.assign({ type: 'helmet' }, ARM[key]); }
+
+const shopItems = [
+    /* ===== ZIRHLAR ===== */
+    { id: 'zirh-ejderha-kral', name: 'Ejderha Kral Zırhı', cat: 'armor', rarity: 'legendary', price: 120000,
+      desc: 'Taç Ejderhası\'nın pullarından dövülmüş, altın işlemeli kızıl savaş zırhı. Sırtındaki kanatlar ejderha soyunun yeminini taşır.',
+      stats: { 'Savunma': 92, 'Dayanıklılık': 88, 'Çeviklik': 55, 'Gizlilik': 18 }, model: armorModel('dragon') },
+    { id: 'zirh-gece-hukumdari', name: 'Gece Hükümdarı Zırhı', cat: 'armor', rarity: 'legendary', price: 98000,
+      desc: 'Gölgeler Konseyi\'nin en üst rütbesine verilen, mor ışıkla damarlanmış sessiz zırh. Pelerini ışığı yutar.',
+      stats: { 'Savunma': 62, 'Dayanıklılık': 60, 'Çeviklik': 90, 'Gizlilik': 98 }, model: armorModel('night') },
+    { id: 'zirh-akagane', name: 'Akagane Kızıl Samuray', cat: 'armor', rarity: 'epic', price: 42000,
+      desc: 'Kızıl lake kaplı klasik samuray zırhı. Boynuzlu miğferi ve sırt sancağı ile savaş meydanında uzaktan tanınır.',
+      stats: { 'Savunma': 78, 'Dayanıklılık': 74, 'Çeviklik': 66, 'Gizlilik': 30 }, model: armorModel('akagane') },
+    { id: 'zirh-elenor-buz', name: 'Elenor Buz Muhafızı', cat: 'armor', rarity: 'epic', price: 46000,
+      desc: 'Elenor Krallığı\'nın kadim buzundan işlenmiş, geyik boynuzlu taçlı zırh. Soğuğa karşı bağışıklık verir.',
+      stats: { 'Savunma': 84, 'Dayanıklılık': 82, 'Çeviklik': 48, 'Gizlilik': 25 }, model: armorModel('ice') },
+    { id: 'zirh-cicekli-orman', name: 'Çiçekli Orman Koruyucusu', cat: 'armor', rarity: 'rare', price: 18500,
+      desc: 'Büyülü ormanın koruyucularına ait yeşil zırh. Pembe çiçek süslemeleri yaralı taşıyıcısını yavaşça iyileştirir.',
+      stats: { 'Savunma': 58, 'Dayanıklılık': 62, 'Çeviklik': 72, 'Gizlilik': 55 }, model: armorModel('flower') },
+    { id: 'zirh-gothenburg-demir', name: 'Gothenburg Demir Savaşçısı', cat: 'armor', rarity: 'rare', price: 15800,
+      desc: 'Kuzey demircilerinin dövdüğü ağır, perçinli savaş zırhı. Ağırdır ama darbeleri çelik duvar gibi karşılar.',
+      stats: { 'Savunma': 90, 'Dayanıklılık': 94, 'Çeviklik': 24, 'Gizlilik': 8 }, model: armorModel('iron') },
+    { id: 'zirh-burran-col', name: 'Burran Çöl Nöbetçisi', cat: 'armor', rarity: 'rare', price: 17200,
+      desc: 'Çöl surlarını bekleyen nöbetçilerin bronz zırhı. Turkuaz kumaş ve hilal taçlı miğferiyle sıcağa dayanıklıdır.',
+      stats: { 'Savunma': 66, 'Dayanıklılık': 70, 'Çeviklik': 60, 'Gizlilik': 36 }, model: armorModel('sand') },
+    { id: 'zirh-wyvern-pulu', name: 'Wyvern Pulu Zırhı', cat: 'armor', rarity: 'epic', price: 52000,
+      desc: 'Dağ zirvesi Wyvern\'lerinin pullarıyla kaplı zümrüt zırh. Kanatları süzülmeyi, zehir direncini ve hızı getirir.',
+      stats: { 'Savunma': 76, 'Dayanıklılık': 72, 'Çeviklik': 80, 'Gizlilik': 44 }, model: armorModel('wyvern') },
+    { id: 'zirh-merdorim-gotik', name: 'Merdorim Gotik Soylu', cat: 'armor', rarity: 'epic', price: 39000,
+      desc: 'Merdorim aristokratlarının gümüş süslemeli derin mor zırhı. Alev tepeli miğferi gece meşalelerinde parlar.',
+      stats: { 'Savunma': 72, 'Dayanıklılık': 68, 'Çeviklik': 58, 'Gizlilik': 42 }, model: armorModel('gothic') },
+    { id: 'zirh-iga-deniz', name: 'Iga Deniz Ejderi', cat: 'armor', rarity: 'rare', price: 21000,
+      desc: 'Iga limanının denizci savaşçılarının lacivert zırhı. Altın ejderha süsü açık denizlerin efendisini simgeler.',
+      stats: { 'Savunma': 68, 'Dayanıklılık': 66, 'Çeviklik': 70, 'Gizlilik': 34 }, model: armorModel('sea') },
+
+    /* ===== MİĞFERLER ===== */
+    { id: 'migfer-ejderha-taci', name: 'Ejderha Tacı Miğferi', cat: 'helmet', rarity: 'legendary', price: 52000,
+      desc: 'Altın ejderha tepeliği ve kızıl lake ile dövülmüş taç miğfer. Takan kişi ejderha soyundan sayılır.',
+      stats: { 'Savunma': 88, 'Dayanıklılık': 80, 'Çeviklik': 60 }, model: helmetModel('dragon') },
+    { id: 'migfer-golge-basligi', name: 'Gölge Başlığı', cat: 'helmet', rarity: 'epic', price: 21000,
+      desc: 'Yüzü tamamen saran kumaş başlık ve hilal tepelik. Gözlerinde mor ışık yanar.',
+      stats: { 'Savunma': 50, 'Dayanıklılık': 52, 'Gizlilik': 94 }, model: helmetModel('night') },
+    { id: 'migfer-oni-kabuto', name: 'Oni Kabuto', cat: 'helmet', rarity: 'rare', price: 9800,
+      desc: 'Şeytan yüzlü maskeli, boynuzlu klasik kabuto. Düşmanı daha ilk bakışta ürkütür.',
+      stats: { 'Savunma': 70, 'Dayanıklılık': 66, 'Korku': 85 }, model: helmetModel('akagane') },
+    { id: 'migfer-buz-geyigi', name: 'Buz Geyiği Miğferi', cat: 'helmet', rarity: 'epic', price: 24500,
+      desc: 'Elenor buzundan oyulmuş, dallı geyik boynuzlu soğuk miğfer.',
+      stats: { 'Savunma': 78, 'Dayanıklılık': 74, 'Çeviklik': 52 }, model: helmetModel('ice') },
+    { id: 'migfer-yarim-ay', name: 'Yarım Ay Miğferi', cat: 'helmet', rarity: 'rare', price: 8800,
+      desc: 'Burran nöbetçilerinin hilal tepelikli bronz miğferi.',
+      stats: { 'Savunma': 62, 'Dayanıklılık': 64, 'Çeviklik': 66 }, model: helmetModel('sand') },
+    { id: 'migfer-gotik-alev', name: 'Gotik Alev Miğferi', cat: 'helmet', rarity: 'epic', price: 19500,
+      desc: 'Merdorim sarayından, alev biçimli gümüş tepelikli mor miğfer.',
+      stats: { 'Savunma': 68, 'Dayanıklılık': 64, 'Çeviklik': 58 }, model: helmetModel('gothic') },
+
+    /* ===== KILIÇLAR ===== */
+    { id: 'kilic-cirak', name: 'Çırak Katanası', cat: 'sword', rarity: 'common', price: 1200,
+      desc: 'Her dojo\'da eğitim için verilen sade ve dengeli demir katana.',
+      stats: { 'Saldırı': 34, 'Hız': 62, 'Menzil': 50 },
+      model: { type: 'sword', len: 2.5, width: 0.19, curve: 0.05, blade: 0xaeb4bd, edge: 0xf3f4f6, guard: 'round', guardColor: 0x57534e, trim: 0x9ca3af, wrap: 0x44403c } },
+    { id: 'kilic-kuro-tsuki', name: 'Kuro Tsuki — Ay Karası', cat: 'sword', rarity: 'epic', price: 38000,
+      desc: 'Karanlık çelikten dövülmüş, kenarı mor ışıkla yanan gölge katanası. Suikastçıların favorisi.',
+      stats: { 'Saldırı': 76, 'Hız': 90, 'Menzil': 55 },
+      model: { type: 'sword', len: 2.7, width: 0.2, curve: 0.06, blade: 0x15121c, glow: 0xa855f7, guard: 'round', guardColor: 0x2b2540, trim: 0xa855f7, wrap: 0x1a1426 } },
+    { id: 'kilic-akagane-dalga', name: 'Akagane Kızıl Dalga', cat: 'sword', rarity: 'rare', price: 14500,
+      desc: 'Parlak çelik bıçaklı, kızıl sargılı ve altın tsubalı samuray katanası.',
+      stats: { 'Saldırı': 70, 'Hız': 72, 'Menzil': 58 },
+      model: { type: 'sword', len: 2.6, width: 0.2, curve: 0.055, blade: 0xcfd4dc, edge: 0xffffff, guard: 'round', guardColor: 0xc59b27, trim: 0xffd700, wrap: 0x9b1c1c } },
+    { id: 'kilic-ejderha-disi', name: 'Ejderha Dişi', cat: 'sword', rarity: 'legendary', price: 110000,
+      desc: 'Taç Ejderhası\'nın dişinden dövüldüğü söylenen altın bıçaklı efsanevi kılıç. Her vuruşta alev yalar.',
+      stats: { 'Saldırı': 98, 'Hız': 66, 'Menzil': 70 },
+      model: { type: 'sword', len: 2.9, width: 0.27, curve: 0.035, blade: 0xd9a420, glow: 0xff6a1a, guard: 'ring', guardColor: 0x7a1313, trim: 0xd4a017, wrap: 0x3b0a0a } },
+    { id: 'kilic-buz-hukumdari', name: 'Buz Hükümdarı', cat: 'sword', rarity: 'epic', price: 44000,
+      desc: 'Elenor buzuyla işlenmiş camsı bıçak. Dokunduğu her şeyi dondurur.',
+      stats: { 'Saldırı': 82, 'Hız': 70, 'Menzil': 62 },
+      model: { type: 'sword', len: 2.8, width: 0.24, curve: 0.02, blade: 0xbfe8ff, alpha: 0.88, rough: 0.05, glow: 0x67e8f9, guard: 'wing', guardColor: 0xe0f2fe, trim: 0x38bdf8, wrap: 0x1e3a8a } },
+    { id: 'kilic-gok-yaricisi', name: 'Gök Yarıcı Ōdachi', cat: 'sword', rarity: 'rare', price: 19800,
+      desc: 'Çok uzun ve ağır savaş kılıcı. İki elle kullanılır, geniş yaylar çizer.',
+      stats: { 'Saldırı': 88, 'Hız': 38, 'Menzil': 94 },
+      model: { type: 'sword', len: 3.5, width: 0.22, curve: 0.08, blade: 0xaab4c4, edge: 0xf8fafc, guard: 'cross', guardColor: 0x44403c, trim: 0xb45309, wrap: 0x292524 } },
+    { id: 'kilic-sessiz-nefes', name: 'Sessiz Nefes Wakizashi', cat: 'sword', rarity: 'rare', price: 6800,
+      desc: 'Kısa, hafif ve çevik. Çiçekli Orman\'ın yaprak süslü kısa kılıcı.',
+      stats: { 'Saldırı': 48, 'Hız': 92, 'Menzil': 30 },
+      model: { type: 'sword', len: 1.6, width: 0.17, curve: 0.05, blade: 0xb7c2b0, edge: 0xf3f4f6, guard: 'leaf', guardColor: 0x3f6b3a, trim: 0xf9a8d4, wrap: 0x14532d } },
+    { id: 'kilic-zehir-disi', name: 'Zehir Dişi', cat: 'sword', rarity: 'epic', price: 36000,
+      desc: 'Wyvern zehriyle bilenmiş zümrüt kılıç. Her kesik zehir bırakır.',
+      stats: { 'Saldırı': 78, 'Hız': 78, 'Menzil': 52 },
+      model: { type: 'sword', len: 2.5, width: 0.21, curve: 0.09, blade: 0x0b3d2e, glow: 0x4ade80, guard: 'wing', guardColor: 0x0f766e, trim: 0x34d399, wrap: 0x022c22 } },
+
+    /* ===== KUSARİGAMA ===== */
+    { id: 'kusari-celik-orak', name: 'Çelik Orak', cat: 'kusari', rarity: 'common', price: 2400,
+      desc: 'Başlangıç kusarigaması: sağlam çelik orak, dayanıklı zincir ve demir ağırlık.',
+      stats: { 'Saldırı': 40, 'Menzil': 70, 'Kontrol': 52 },
+      model: { type: 'kusari', steel: 0xb8c0cc, chain: 0x7b8494, handle: 0x44403c } },
+    { id: 'kusari-zehir-kuyrugu', name: 'Zehir Kuyruğu', cat: 'kusari', rarity: 'epic', price: 33000,
+      desc: 'Wyvern kuyruğundan esinlenen zümrüt orak ve dikenli ağırlık. Zincir zehir sızdırır.',
+      stats: { 'Saldırı': 72, 'Menzil': 80, 'Kontrol': 76 },
+      model: { type: 'kusari', steel: 0x0f3d2e, chain: 0x14532d, handle: 0x052e20, glow: 0x4ade80, spiked: true } },
+    { id: 'kusari-kizil-firtina', name: 'Kızıl Fırtına', cat: 'kusari', rarity: 'rare', price: 12800,
+      desc: 'Kızıl zincirli, ateş parıltılı dikenli kusarigama. Kalabalıkları dağıtır.',
+      stats: { 'Saldırı': 66, 'Menzil': 74, 'Kontrol': 60 },
+      model: { type: 'kusari', steel: 0xd1d5db, chain: 0x9b1c1c, handle: 0x450a0a, glow: 0xff5a2a, spiked: true } },
+    { id: 'kusari-bin-halka', name: 'Bin Halka', cat: 'kusari', rarity: 'legendary', price: 76000,
+      desc: 'Altın halkalı efsanevi zincir. Üstatların elinde bin parçaya bölünüp alanı biçer.',
+      stats: { 'Saldırı': 90, 'Menzil': 96, 'Kontrol': 92 },
+      model: { type: 'kusari', steel: 0xe5e7eb, chain: 0xfacc15, handle: 0x1c1917, glow: 0xfde68a } },
+
+    /* ===== KUNAİ ===== */
+    { id: 'kunai-demir', name: 'Demir Kunai Seti', cat: 'kunai', rarity: 'common', price: 900,
+      desc: 'Üçlü demir kunai seti. Hızlı, sade ve ucuz.',
+      stats: { 'Saldırı': 30, 'Hız': 80, 'Menzil': 60 },
+      model: { type: 'kunai', blade: 0x9ca3af, wrap: 0x292524, count: 3 } },
+    { id: 'kunai-patlayici-not', name: 'Patlayıcı Not Kunai', cat: 'kunai', rarity: 'rare', price: 5600,
+      desc: 'Halkasına kırmızı patlayıcı not bağlı kunai. Saniyeler sonra patlar.',
+      stats: { 'Saldırı': 62, 'Hız': 70, 'Menzil': 58 },
+      model: { type: 'kunai', blade: 0x6b7280, wrap: 0x7f1d1d, tag: 0xdc2626, count: 3 } },
+    { id: 'kunai-golge-yankisi', name: 'Gölge Yankısı', cat: 'kunai', rarity: 'epic', price: 21000,
+      desc: 'Beş mor ışıklı gölge kunaisi. Duvarlardan seker, ikinci hedefi bulur.',
+      stats: { 'Saldırı': 68, 'Hız': 88, 'Menzil': 74 },
+      model: { type: 'kunai', blade: 0x18121f, glow: 0xa855f7, wrap: 0x1f1830, count: 5 } },
+    { id: 'kunai-isik-cizgisi', name: 'Işık Çizgisi', cat: 'kunai', rarity: 'rare', price: 9800,
+      desc: 'Zırh delen mavi ışıklı kunai. Arkasındaki hedefe de işler.',
+      stats: { 'Saldırı': 64, 'Hız': 76, 'Menzil': 82 },
+      model: { type: 'kunai', blade: 0xe0f2fe, glow: 0x7dd3fc, wrap: 0x0c4a6e, count: 3 } },
+    { id: 'kunai-altin-yagmur', name: 'Altın Yağmur', cat: 'kunai', rarity: 'legendary', price: 64000,
+      desc: 'Yedi altın kunai. Gökten yağmur gibi iner, alanı kısa süre ölümcül bölgeye çevirir.',
+      stats: { 'Saldırı': 86, 'Hız': 92, 'Menzil': 88 },
+      model: { type: 'kunai', blade: 0xfacc15, glow: 0xfde68a, wrap: 0x78350f, count: 7 } }
+];
+
+/* ============================================================
+   3D MODEL ÜRETİCİLERİ (düzenlemene gerek yok)
+   ============================================================ */
+function mat(color, o) {
+    return new THREE.MeshStandardMaterial(Object.assign({ color: color, metalness: 0.55, roughness: 0.42 }, o || {}));
+}
+function glowMat(color, intensity) {
+    return new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: intensity == null ? 1.4 : intensity, metalness: 0.1, roughness: 0.5 });
+}
+function clothMat(color) {
+    return mat(color, { metalness: 0.05, roughness: 0.92, side: THREE.DoubleSide });
+}
+function put(geo, material, x, y, z) {
+    const m = new THREE.Mesh(geo, material);
+    m.position.set(x || 0, y || 0, z || 0);
+    return m;
+}
+function orient(m, x, y, z) {
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(x, y, z).normalize());
+    return m;
+}
+function tubeMesh(pts, r, material) {
+    const curve = new THREE.CatmullRomCurve3(pts.map(function (a) { return new THREE.Vector3(a[0], a[1], a[2]); }));
+    return new THREE.Mesh(new THREE.TubeGeometry(curve, 20, r, 8, false), material);
+}
+function boneMesh(a, b, r, material) {
+    const va = new THREE.Vector3(a[0], a[1], a[2]);
+    const vb = new THREE.Vector3(b[0], b[1], b[2]);
+    const d = vb.clone().sub(va);
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.7, r, d.length(), 6), material);
+    m.position.copy(va.clone().add(vb).multiplyScalar(0.5));
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize());
+    return m;
+}
+
+/* ---------- Bıçak geometrisi (katana) ---------- */
+function bladeGeometry(len, width, curve, thick, spineK, edgeK) {
+    const N = 30;
+    const shape = new THREE.Shape();
+    const hw = function (t) {
+        return (width / 2) * (t < 0.9 ? (1 - 0.22 * t) : (1 - 0.22 * 0.9) * (1 - (t - 0.9) / 0.1));
+    };
+    const off = function (t) { return curve * t * t * len; };
+    shape.moveTo(off(0) + hw(0) * spineK, 0);
+    for (let i = 1; i <= N; i++) { const t = i / N; shape.lineTo(off(t) + hw(t) * spineK, t * len); }
+    for (let i = N - 1; i >= 0; i--) { const t = i / N; shape.lineTo(off(t) + hw(t) * edgeK, t * len); }
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: thick, bevelEnabled: false });
+    geo.translate(0, 0, -thick / 2);
+    return geo;
+}
+
+/* ---------- KILIÇ ---------- */
+function buildSword(p) {
+    const g = new THREE.Group();
+    const len = p.len || 2.6, width = p.width || 0.2, thick = p.thick || 0.035;
+    const curve = p.curve == null ? 0.05 : p.curve;
+
+    const bladeMat = mat(p.blade, { metalness: 0.92, roughness: p.rough == null ? 0.22 : p.rough });
+    if (p.alpha) { bladeMat.transparent = true; bladeMat.opacity = p.alpha; }
+    g.add(new THREE.Mesh(bladeGeometry(len, width, curve, thick, 0.15, -0.85), bladeMat));
+
+    const edgeMat = p.glow != null ? glowMat(p.glow, 1.5) : mat(p.edge || 0xf3f4f6, { metalness: 1, roughness: 0.1 });
+    g.add(new THREE.Mesh(bladeGeometry(len * 0.985, width, curve, thick * 1.08, -0.55, -0.85), edgeMat));
+
+    const gm = mat(p.guardColor, { metalness: 0.85, roughness: 0.3 });
+    const tm = mat(p.trim || p.guardColor, { metalness: 1, roughness: 0.2 });
+    const gt = p.guard || 'round';
+    if (gt === 'round') {
+        g.add(put(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 32), gm, 0, 0, 0));
+        g.add(put(new THREE.TorusGeometry(0.2, 0.014, 8, 32).rotateX(Math.PI / 2), tm, 0, 0.025, 0));
+    } else if (gt === 'cross') {
+        g.add(put(new THREE.BoxGeometry(0.75, 0.06, 0.1), gm));
+        [-1, 1].forEach(function (s) { g.add(put(new THREE.SphereGeometry(0.075, 12, 10), tm, s * 0.38, 0, 0)); });
+        g.add(put(new THREE.BoxGeometry(0.12, 0.07, 0.18), tm));
+    } else if (gt === 'ring') {
+        g.add(put(new THREE.TorusGeometry(0.25, 0.042, 10, 28).rotateX(Math.PI / 2), gm));
+        g.add(put(new THREE.CylinderGeometry(0.22, 0.22, 0.03, 24), tm));
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            g.add(orient(put(new THREE.ConeGeometry(0.045, 0.2, 6), tm, Math.cos(a) * 0.32, 0, Math.sin(a) * 0.32), Math.cos(a), 0.15, Math.sin(a)));
+        }
+    } else if (gt === 'wing') {
+        [-1, 1].forEach(function (s) {
+            const w = put(new THREE.BoxGeometry(0.5, 0.045, 0.14), gm, s * 0.3, 0.03, 0);
+            w.rotation.z = s * 0.3;
+            g.add(w);
+            g.add(orient(put(new THREE.ConeGeometry(0.05, 0.22, 6), tm, s * 0.56, 0.15, 0), s * 0.5, 1, 0));
+        });
+        g.add(put(new THREE.CylinderGeometry(0.09, 0.09, 0.07, 14), tm));
+    } else if (gt === 'leaf') {
+        [[0.15, 0], [-0.15, 0], [0, 0.15], [0, -0.15]].forEach(function (a) {
+            g.add(put(new THREE.SphereGeometry(0.14, 14, 10).scale(1, 0.3, 1), gm, a[0], 0, a[1]));
+        });
+        g.add(put(new THREE.CylinderGeometry(0.07, 0.07, 0.06, 14), tm));
+    }
+
+    const wrapMat = mat(p.wrap, { metalness: 0.05, roughness: 0.85 });
+    g.add(put(new THREE.CylinderGeometry(0.045, 0.045, 0.85, 14), wrapMat, 0, -0.455, 0));
+    for (let i = 0; i < 9; i++) {
+        g.add(put(new THREE.TorusGeometry(0.049, 0.011, 6, 14).rotateX(Math.PI / 2), tm, 0, -0.1 - i * 0.092, 0));
+    }
+    g.add(put(new THREE.SphereGeometry(0.065, 14, 10).scale(1, 0.8, 1), gm, 0, -0.9, 0));
+
+    g.userData.tilt = 0.6;
+    g.userData.float = true;
+    return g;
+}
+
+/* ---------- KUNAİ ---------- */
+function buildKunai(p) {
+    const root = new THREE.Group();
+    const count = p.count || 3;
+
+    function one() {
+        const k = new THREE.Group();
+        const s = new THREE.Shape();
+        s.moveTo(0, 0);
+        s.bezierCurveTo(0.22, 0.05, 0.26, 0.35, 0, 1.1);
+        s.bezierCurveTo(-0.26, 0.35, -0.22, 0.05, 0, 0);
+        const bg = new THREE.ExtrudeGeometry(s, { depth: 0.04, bevelEnabled: false });
+        bg.translate(0, 0, -0.02);
+        k.add(new THREE.Mesh(bg, mat(p.blade, { metalness: 0.9, roughness: 0.25 })));
+
+        const f = new THREE.Shape();
+        f.moveTo(0, 0.06); f.lineTo(0.03, 0.4); f.lineTo(0, 1.0); f.lineTo(-0.03, 0.4);
+        const fg = new THREE.ExtrudeGeometry(f, { depth: 0.05, bevelEnabled: false });
+        fg.translate(0, 0, -0.025);
+        k.add(new THREE.Mesh(fg, p.glow != null ? glowMat(p.glow, 1.6) : mat(0xe5e7eb, { metalness: 1, roughness: 0.12 })));
+
+        const steel = mat(p.blade, { metalness: 0.9, roughness: 0.3 });
+        k.add(put(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 12), steel, 0, 0, 0));
+        k.add(put(new THREE.CylinderGeometry(0.036, 0.036, 0.46, 12), mat(p.wrap, { metalness: 0.05, roughness: 0.85 }), 0, -0.25, 0));
+        for (let i = 0; i < 5; i++) {
+            k.add(put(new THREE.TorusGeometry(0.04, 0.008, 6, 12).rotateX(Math.PI / 2), steel, 0, -0.06 - i * 0.09, 0));
+        }
+        k.add(put(new THREE.TorusGeometry(0.1, 0.022, 8, 20), steel, 0, -0.58, 0));
+        if (p.tag != null) {
+            const tag = put(new THREE.PlaneGeometry(0.11, 0.34), mat(p.tag, { metalness: 0, roughness: 0.8, side: THREE.DoubleSide, emissive: p.tag, emissiveIntensity: 0.35 }), 0.02, -0.86, 0);
+            tag.rotation.z = 0.08;
+            k.add(tag);
+            for (let i = 0; i < 3; i++) {
+                k.add(put(new THREE.BoxGeometry(0.07, 0.012, 0.004), mat(0x111111, { metalness: 0, roughness: 1 }), 0.02, -0.76 - i * 0.07, 0.004));
+            }
+        }
+        return k;
+    }
+
+    for (let i = 0; i < count; i++) {
+        const k = one();
+        const spread = count === 1 ? 0 : (i - (count - 1) / 2) * (count > 5 ? 0.22 : 0.3);
+        k.rotation.z = spread;
+        k.position.z = (i % 2 ? 0.04 : -0.04);
+        root.add(k);
+    }
+    root.userData.tilt = 0.25;
+    root.userData.float = true;
+    return root;
+}
+
+/* ---------- KUSARİGAMA ---------- */
+function buildKusarigama(p) {
+    const g = new THREE.Group();
+    const steel = mat(p.steel, { metalness: 0.92, roughness: 0.24 });
+    const chainMat = mat(p.chain, { metalness: 0.85, roughness: 0.3 });
+    const handleMat = mat(p.handle, { metalness: 0.1, roughness: 0.8 });
+    const trim = mat(p.glow != null ? p.glow : 0xb8c0cc, { metalness: 0.8, roughness: 0.3 });
+
+    // sap
+    g.add(put(new THREE.CylinderGeometry(0.05, 0.05, 1.8, 14), handleMat, 0, 0, 0));
+    for (let i = 0; i < 8; i++) {
+        g.add(put(new THREE.TorusGeometry(0.054, 0.011, 6, 14).rotateX(Math.PI / 2), trim, 0, -0.75 + i * 0.12, 0));
+    }
+    g.add(put(new THREE.CylinderGeometry(0.075, 0.06, 0.1, 14), steel, 0, 0.9, 0));
+    g.add(put(new THREE.SphereGeometry(0.07, 12, 10), steel, 0, -0.92, 0));
+
+    // orak (kama)
+    const R = 0.58, cx = R, cy = 0;
+    const sh = new THREE.Shape();
+    sh.absarc(cx, cy, R, Math.PI, -0.6, true);
+    sh.absarc(cx, cy - 0.1, R - 0.12, -0.6, Math.PI, false);
+    const sg = new THREE.ExtrudeGeometry(sh, { depth: 0.045, bevelEnabled: false });
+    sg.translate(0, 0, -0.0225);
+    const sickle = new THREE.Mesh(sg, steel);
+    sickle.position.set(0.02, 0.86, 0);
+    g.add(sickle);
+    if (p.glow != null) {
+        const eg = new THREE.TorusGeometry(R - 0.01, 0.012, 6, 32, 2.4);
+        const edge = new THREE.Mesh(eg, glowMat(p.glow, 1.6));
+        edge.position.set(0.02 + cx, 0.86 + cy, 0);
+        edge.rotation.z = 0.35;
+        g.add(edge);
+    }
+
+    // zincir
+    const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, -0.95, 0),
+        new THREE.Vector3(0.55, -1.25, 0.3),
+        new THREE.Vector3(1.1, -1.0, 0.65),
+        new THREE.Vector3(1.55, -0.45, 0.55),
+        new THREE.Vector3(1.75, 0.2, 0.25)
+    ]);
+    const linkCount = 34;
+    const linkGeo = new THREE.TorusGeometry(0.055, 0.014, 6, 10).rotateY(Math.PI / 2).scale(1, 1, 1.5);
+    for (let i = 0; i <= linkCount; i++) {
+        const t = i / linkCount;
+        const pos = curve.getPointAt(t);
+        const tan = curve.getTangentAt(t);
+        const link = new THREE.Mesh(linkGeo, chainMat);
+        link.position.copy(pos);
+        link.lookAt(pos.clone().add(tan));
+        if (i % 2) link.rotateZ(Math.PI / 2);
+        g.add(link);
+    }
+
+    // ağırlık (fundo)
+    const endP = curve.getPointAt(1);
+    const w = new THREE.Group();
+    w.position.copy(endP.clone().add(new THREE.Vector3(0.02, 0.18, 0)));
+    w.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), steel));
+    w.add(put(new THREE.TorusGeometry(0.2, 0.018, 8, 24), trim, 0, 0, 0));
+    if (p.spiked) {
+        const dirs = [];
+        for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
+            if (x === 0 && y === 0 && z === 0) continue;
+            if (Math.abs(x) + Math.abs(y) + Math.abs(z) === 3 || Math.abs(x) + Math.abs(y) + Math.abs(z) === 1) dirs.push([x, y, z]);
+        }
+        dirs.forEach(function (d) {
+            const v = new THREE.Vector3(d[0], d[1], d[2]).normalize();
+            w.add(orient(put(new THREE.ConeGeometry(0.05, 0.2, 6), steel, v.x * 0.27, v.y * 0.27, v.z * 0.27), d[0], d[1], d[2]));
+        });
+    }
+    g.add(w);
+
+    g.userData.tilt = 0.3;
+    g.userData.float = true;
+    return g;
+}
+
+/* ---------- MİĞFER (kabuto) ---------- */
+function buildHelmet(p) {
+    const g = new THREE.Group();
+    const main = mat(p.main, { metalness: p.metal == null ? 0.7 : p.metal, roughness: p.rough == null ? 0.35 : p.rough, side: THREE.DoubleSide });
+    const trim = mat(p.trim, { metalness: 0.9, roughness: 0.25, side: THREE.DoubleSide });
+    const dark = mat(0x0c0a09, { metalness: 0.2, roughness: 0.8 });
+    const clothM = clothMat(p.cloth);
+    const glow = glowMat(p.glow, 2.2);
+
+    // kase
+    g.add(put(new THREE.SphereGeometry(0.29, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), main, 0, 0.03, 0));
+    g.add(put(new THREE.TorusGeometry(0.29, 0.02, 8, 32).rotateX(Math.PI / 2), trim, 0, 0.03, 0));
+    for (let i = 0; i < 6; i++) {
+        const rib = put(new THREE.TorusGeometry(0.296, 0.008, 6, 20, Math.PI), trim, 0, 0.03, 0);
+        rib.rotation.y = (i / 6) * Math.PI;
+        g.add(rib);
+    }
+    // siper
+    g.add(put(new THREE.CylinderGeometry(0.325, 0.31, 0.035, 24, 1, false, -Math.PI / 2, Math.PI), trim, 0, 0.03, 0.02));
+
+    // ense koruması (shikoro)
+    for (let i = 0; i < 4; i++) {
+        const r0 = 0.3 + i * 0.045;
+        const seg = new THREE.Mesh(new THREE.CylinderGeometry(r0, r0 + 0.05, 0.085, 28, 1, true, Math.PI * 0.42, Math.PI * 1.16), i % 2 ? trim : main);
+        seg.position.y = -0.04 - i * 0.075;
+        g.add(seg);
+    }
+    // yan kanatlar (fukigaeshi)
+    [-1, 1].forEach(function (s) {
+        const pl = put(new THREE.BoxGeometry(0.2, 0.22, 0.035), trim, s * 0.32, 0.0, 0.1);
+        pl.rotation.y = s * 0.9;
+        g.add(pl);
+    });
+
+    // yüz
+    g.add(put(new THREE.SphereGeometry(0.235, 20, 14), dark, 0, -0.05, 0));
+    if (p.mask === 'demon' || p.mask === 'plain') {
+        const maskMat = p.mask === 'demon' ? main : clothM;
+        const mk = new THREE.Mesh(new THREE.SphereGeometry(0.25, 20, 14, Math.PI / 2 - 1.05, 2.1, Math.PI * 0.5, Math.PI * 0.48), maskMat);
+        mk.position.set(0, -0.05, 0);
+        g.add(mk);
+    }
+    if (p.mask === 'demon') {
+        g.add(put(new THREE.ConeGeometry(0.04, 0.1, 4), trim, 0, -0.1, 0.235).rotateX(Math.PI / 2));
+        [-0.07, -0.025, 0.025, 0.07].forEach(function (x, i) {
+            const big = i === 0 || i === 3;
+            const fang = put(new THREE.ConeGeometry(big ? 0.022 : 0.015, big ? 0.1 : 0.06, 5), mat(0xf5f5f4, { metalness: 0, roughness: 0.6 }), x, -0.21, 0.205);
+            fang.rotation.x = Math.PI;
+            g.add(fang);
+        });
+    }
+    // gözler
+    [-1, 1].forEach(function (s) {
+        const eye = put(new THREE.BoxGeometry(0.085, 0.02, 0.03), glow, s * 0.085, -0.005, 0.215);
+        eye.rotation.z = s * 0.3;
+        eye.rotation.y = s * 0.35;
+        g.add(eye);
+    });
+
+    // tepelik (maedate)
+    const c = p.crest || 'none';
+    if (c === 'horns') {
+        [-1, 1].forEach(function (s) {
+            g.add(tubeMesh([[s * 0.12, 0.2, 0.14], [s * 0.28, 0.42, 0.2], [s * 0.5, 0.72, 0.14], [s * 0.56, 0.98, 0.02]], 0.032, trim));
+            g.add(orient(put(new THREE.ConeGeometry(0.045, 0.22, 8), trim, s * 0.575, 1.06, -0.01), s * 0.1, 1, -0.3));
+            g.add(put(new THREE.SphereGeometry(0.06, 10, 8), trim, s * 0.1, 0.2, 0.15));
+        });
+        g.add(put(new THREE.SphereGeometry(0.05, 10, 8), glow, 0, 0.3, 0.24));
+    } else if (c === 'crescent') {
+        const cres = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.042, 10, 40, Math.PI * 1.35), trim);
+        cres.position.set(0, 0.5, 0.14);
+        cres.rotation.z = Math.PI * 0.825;
+        g.add(cres);
+        g.add(put(new THREE.SphereGeometry(0.06, 12, 10), glow, 0, 0.4, 0.16));
+        g.add(put(new THREE.CylinderGeometry(0.05, 0.07, 0.2, 10), trim, 0, 0.26, 0.14));
+    } else if (c === 'dragon') {
+        g.add(orient(put(new THREE.ConeGeometry(0.075, 0.75, 4), trim, 0, 0.6, 0.1), 0, 1, -0.15));
+        [-1, 1].forEach(function (s) {
+            g.add(tubeMesh([[s * 0.1, 0.22, 0.1], [s * 0.3, 0.5, 0.0], [s * 0.55, 0.62, -0.25], [s * 0.72, 0.52, -0.5]], 0.03, trim));
+            g.add(orient(put(new THREE.ConeGeometry(0.04, 0.2, 6), trim, s * 0.74, 0.5, -0.55), s * 0.15, -0.3, -1));
+        });
+        g.add(put(new THREE.SphereGeometry(0.06, 12, 10), glow, 0, 0.3, 0.25));
+    } else if (c === 'flame') {
+        for (let i = -2; i <= 2; i++) {
+            const h = 0.62 - 0.08 * Math.abs(i);
+            g.add(orient(put(new THREE.ConeGeometry(0.075, h, 8), i === 0 ? glow : trim, i * 0.1, 0.18 + h / 2, 0.14), i * 0.55, 1, -0.1));
+        }
+        g.add(put(new THREE.SphereGeometry(0.06, 12, 10), glow, 0, 0.22, 0.27));
+    } else if (c === 'antlers') {
+        [-1, 1].forEach(function (s) {
+            g.add(tubeMesh([[s * 0.1, 0.25, 0.05], [s * 0.22, 0.55, 0.0], [s * 0.38, 0.85, -0.05], [s * 0.42, 1.1, -0.1]], 0.028, trim));
+            g.add(tubeMesh([[s * 0.2, 0.5, 0.0], [s * 0.5, 0.65, 0.0], [s * 0.62, 0.92, 0.0]], 0.022, trim));
+            g.add(tubeMesh([[s * 0.3, 0.72, -0.03], [s * 0.1, 0.95, -0.02]], 0.02, trim));
+            g.add(orient(put(new THREE.ConeGeometry(0.03, 0.16, 6), trim, s * 0.43, 1.16, -0.1), s * 0.1, 1, -0.1));
+            g.add(orient(put(new THREE.ConeGeometry(0.025, 0.14, 6), trim, s * 0.63, 0.98, 0.0), s * 0.2, 1, 0));
+        });
+        g.add(put(new THREE.SphereGeometry(0.05, 10, 8), glow, 0, 0.26, 0.26));
+    }
+
+    g.userData.float = false;
+    return g;
+}
+
+/* ---------- ZIRH SETİ (tam figür) ---------- */
+function buildArmor(p) {
+    const g = new THREE.Group();
+    const main = mat(p.main, { metalness: p.metal == null ? 0.65 : p.metal, roughness: p.rough == null ? 0.38 : p.rough });
+    const trim = mat(p.trim, { metalness: 0.9, roughness: 0.25 });
+    const clothM = clothMat(p.cloth);
+    const dark = mat(0x151210, { metalness: 0.3, roughness: 0.7 });
+    const glow = glowMat(p.glow, 1.8);
+    const sides = [-1, 1];
+
+    // bacaklar
+    sides.forEach(function (s) {
+        g.add(put(new THREE.BoxGeometry(0.3, 0.16, 0.56), dark, s * 0.22, 0.09, 0.1));
+        g.add(put(new THREE.BoxGeometry(0.26, 0.08, 0.3), main, s * 0.22, 0.21, 0.17));
+        g.add(put(new THREE.CylinderGeometry(0.15, 0.115, 0.9, 14), main, s * 0.22, 0.72, 0));
+        g.add(put(new THREE.CylinderGeometry(0.157, 0.157, 0.045, 14), trim, s * 0.22, 0.3, 0));
+        g.add(put(new THREE.SphereGeometry(0.17, 14, 10).scale(1, 0.85, 1), trim, s * 0.22, 1.2, 0.05));
+        g.add(put(new THREE.CylinderGeometry(0.19, 0.16, 0.7, 14), clothM, s * 0.22, 1.58, 0));
+        if (p.spikes) {
+            g.add(orient(put(new THREE.ConeGeometry(0.06, 0.24, 8), trim, s * 0.22, 1.22, 0.24), 0, 0.1, 1));
+        }
+    });
+
+    // etek plakaları (kusazuri)
+    [[1.76, 0.56, 0.43, 0.29, 10, 0], [1.52, 0.42, 0.47, 0.32, 10, 0.5]].forEach(function (row, ri) {
+        const y = row[0], h = row[1], rad = row[2], w = row[3], n = row[4], offs = row[5];
+        for (let k = 0; k < n; k++) {
+            const a = ((k + offs) / n) * Math.PI * 2;
+            const plate = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.045), ri === 0 ? main : clothM);
+            plate.position.set(Math.sin(a) * rad, y, Math.cos(a) * rad);
+            plate.rotation.order = 'YXZ';
+            plate.rotation.y = a;
+            plate.rotation.x = -0.18;
+            g.add(plate);
+            const edge = new THREE.Mesh(new THREE.BoxGeometry(w * 0.9, 0.035, 0.055), trim);
+            edge.position.set(Math.sin(a) * (rad + 0.03), y - h / 2 + 0.03, Math.cos(a) * (rad + 0.03));
+            edge.rotation.order = 'YXZ';
+            edge.rotation.y = a;
+            edge.rotation.x = -0.18;
+            g.add(edge);
+        }
+    });
+
+    // kemer
+    g.add(put(new THREE.CylinderGeometry(0.42, 0.43, 0.13, 26), clothM, 0, 2.06, 0));
+    g.add(put(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 20).rotateX(Math.PI / 2), glow, 0, 2.06, 0.43));
+    g.add(put(new THREE.TorusGeometry(0.105, 0.016, 8, 24), trim, 0, 2.06, 0.43));
+
+    // gövde (dō)
+    const torso = put(new THREE.CylinderGeometry(0.5, 0.38, 1.15, 24), main, 0, 2.65, 0);
+    torso.scale.z = 0.72;
+    g.add(torso);
+    for (let i = 0; i < 5; i++) {
+        const y = 2.2 + i * 0.22;
+        const r = 0.38 + ((y - 2.075) / 1.15) * 0.12 + 0.012;
+        const band = put(new THREE.CylinderGeometry(r, r, 0.045, 24), i % 2 ? trim : clothM, 0, y, 0);
+        band.scale.z = 0.72;
+        g.add(band);
+    }
+    g.add(put(new THREE.BoxGeometry(0.05, 1.05, 0.03), trim, 0, 2.65, 0.335));
+    g.add(put(new THREE.CylinderGeometry(0.13, 0.13, 0.04, 24).rotateX(Math.PI / 2), glow, 0, 2.82, 0.345));
+    g.add(put(new THREE.TorusGeometry(0.155, 0.02, 8, 28), trim, 0, 2.82, 0.345));
+
+    if (p.heavy) {
+        g.add(put(new THREE.BoxGeometry(0.92, 0.7, 0.1), main, 0, 2.85, 0.33));
+        [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sy) {
+            g.add(put(new THREE.SphereGeometry(0.036, 8, 6), trim, sx * 0.4, 2.85 + sy * 0.3, 0.39));
+        }); });
+    }
+    if (p.scales) {
+        const sGeo = new THREE.SphereGeometry(0.075, 8, 6).scale(1, 0.7, 0.4);
+        for (let row = 0; row < 6; row++) {
+            const y = 2.2 + row * 0.17;
+            const r = 0.38 + ((y - 2.075) / 1.15) * 0.12;
+            for (let k = -4; k <= 4; k++) {
+                const a = k * 0.2 + (row % 2 ? 0.1 : 0);
+                const sc = new THREE.Mesh(sGeo, trim);
+                sc.position.set(Math.sin(a) * r * 1.02, y, Math.cos(a) * r * 0.74);
+                sc.rotation.y = a;
+                g.add(sc);
+            }
+        }
+    }
+
+    // yaka + boyun
+    g.add(put(new THREE.CylinderGeometry(0.24, 0.32, 0.2, 18), main, 0, 3.31, 0));
+    g.add(put(new THREE.TorusGeometry(0.26, 0.022, 8, 24).rotateX(Math.PI / 2), trim, 0, 3.41, 0));
+    g.add(put(new THREE.CylinderGeometry(0.11, 0.11, 0.2, 12), dark, 0, 3.42, 0));
+
+    // omuz plakaları (sode) + kollar
+    sides.forEach(function (s) {
+        const layers = p.heavy ? 5 : 4;
+        for (let i = 0; i < layers; i++) {
+            const pl = new THREE.Mesh(new THREE.BoxGeometry(0.5 + i * 0.05, 0.05, 0.58 + i * 0.03), i % 2 ? trim : main);
+            pl.position.set(s * (0.72 + i * 0.06), 3.14 - i * 0.12, 0);
+            pl.rotation.z = -s * (0.28 + i * 0.04);
+            g.add(pl);
+        }
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), main);
+        cap.scale.set(1.1, 0.8, 1);
+        cap.position.set(s * 0.66, 3.18, 0);
+        cap.rotation.z = -s * 0.3;
+        g.add(cap);
+        if (p.spikes) {
+            g.add(orient(put(new THREE.ConeGeometry(0.075, 0.38, 8), trim, s * 0.78, 3.4, 0), s * 0.5, 1, 0));
+        }
+        const up = put(new THREE.CylinderGeometry(0.115, 0.1, 0.62, 12), clothM, s * 0.8, 2.78, 0);
+        up.rotation.z = s * 0.1;
+        g.add(up);
+        g.add(put(new THREE.SphereGeometry(0.115, 12, 10), trim, s * 0.84, 2.46, 0));
+        const fore = put(new THREE.CylinderGeometry(0.128, 0.095, 0.62, 12), main, s * 0.86, 2.12, 0);
+        fore.rotation.z = s * 0.06;
+        g.add(fore);
+        g.add(put(new THREE.CylinderGeometry(0.1, 0.1, 0.04, 12), trim, s * 0.875, 1.86, 0));
+        g.add(put(new THREE.SphereGeometry(0.1, 12, 10), dark, s * 0.885, 1.76, 0));
+    });
+
+    // kafa
+    const head = buildHelmet(p);
+    head.position.set(0, 3.74, 0);
+    head.scale.setScalar(1.05);
+    g.add(head);
+
+    // sırt
+    if (p.back === 'cloak') {
+        const geo = new THREE.PlaneGeometry(1.5, 2.5, 10, 14);
+        const pos = geo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i), y = pos.getY(i);
+            const u = x / 0.75;
+            const v = (1.25 - y) / 2.5;
+            pos.setZ(i, -0.5 - v * 0.25 + u * u * 0.5 * (0.35 + v * 0.65));
+            pos.setX(i, x * (1 + v * 0.35));
+        }
+        geo.computeVertexNormals();
+        g.add(put(geo, clothM, 0, 2.15, 0));
+        g.add(put(new THREE.TorusGeometry(0.2, 0.022, 8, 24).rotateX(Math.PI / 2), trim, 0, 3.4, -0.05));
+    } else if (p.back === 'wings') {
+        const wingShape = new THREE.Shape();
+        wingShape.moveTo(0, 0);
+        wingShape.lineTo(0.55, 0.75); wingShape.lineTo(1.55, 1.75); wingShape.lineTo(2.1, 1.0);
+        wingShape.lineTo(1.75, 0.85); wingShape.lineTo(1.95, 0.2); wingShape.lineTo(1.4, 0.35);
+        wingShape.lineTo(1.35, -0.35); wingShape.lineTo(0.8, -0.05); wingShape.lineTo(0.55, -0.7);
+        wingShape.lineTo(0.2, -0.3); wingShape.lineTo(0, -0.2);
+        const wgeo = new THREE.ExtrudeGeometry(wingShape, { depth: 0.03, bevelEnabled: false });
+        const membrane = mat(p.wing || p.cloth, { metalness: 0.1, roughness: 0.7, side: THREE.DoubleSide, emissive: p.glow, emissiveIntensity: 0.22 });
+        const tips = [[1.55, 1.75], [2.1, 1.0], [1.95, 0.2], [1.35, -0.35], [0.55, -0.7]];
+        sides.forEach(function (s) {
+            const wg = new THREE.Group();
+            wg.scale.x = s;
+            wg.position.set(s * 0.15, 2.95, -0.45);
+            const inner = new THREE.Group();
+            inner.rotation.y = 0.45;
+            inner.rotation.z = 0.12;
+            inner.add(new THREE.Mesh(wgeo, membrane));
+            tips.forEach(function (t) { inner.add(boneMesh([0, 0, 0.015], [t[0], t[1], 0.015], 0.03, main)); });
+            wg.add(inner);
+            g.add(wg);
+        });
+        g.add(put(new THREE.SphereGeometry(0.16, 12, 10), trim, 0, 2.95, -0.42));
+    } else if (p.back === 'banner') {
+        g.add(put(new THREE.CylinderGeometry(0.025, 0.025, 2.6, 8), trim, 0, 3.7, -0.5));
+        g.add(put(new THREE.SphereGeometry(0.06, 10, 8), trim, 0, 5.02, -0.5));
+        g.add(put(new THREE.BoxGeometry(0.62, 1.9, 0.02), clothM, 0.33, 4.0, -0.5));
+        g.add(put(new THREE.BoxGeometry(0.62, 0.03, 0.03), trim, 0.33, 4.95, -0.5));
+        g.add(put(new THREE.BoxGeometry(0.62, 0.03, 0.03), trim, 0.33, 3.05, -0.5));
+        g.add(put(new THREE.CylinderGeometry(0.17, 0.17, 0.03, 22).rotateX(Math.PI / 2), glow, 0.33, 4.1, -0.485));
+        g.add(put(new THREE.CylinderGeometry(0.17, 0.17, 0.03, 22).rotateX(Math.PI / 2), glow, 0.33, 4.1, -0.515));
+    }
+
+    g.userData.float = false;
+    return g;
+}
+
+function buildModel(m) {
+    if (m.type === 'armor') return buildArmor(m);
+    if (m.type === 'helmet') return buildHelmet(m);
+    if (m.type === 'sword') return buildSword(m);
+    if (m.type === 'kusari') return buildKusarigama(m);
+    if (m.type === 'kunai') return buildKunai(m);
+    return new THREE.Group();
+}
+
+/* ============================================================
+   MAĞAZA ARAYÜZÜ + 3D GÖRÜNTÜLEYİCİ (düzenlemene gerek yok)
+   ============================================================ */
+const shopState = {
+    inited: false, glOk: true, catKey: 'all', selectedId: null, loadedId: null,
+    renderer: null, stage: null, holder: null,
+    running: false, raf: 0, auto: true, dragging: false, lastX: 0, lastY: 0,
+    rotY: 0.6, rotX: 0.12, zoom: 1, floating: false,
+    thumbs: {}, thumbQueue: [], thumbBusy: false, thumbRenderer: null, thumbStage: null
+};
+
+function shopFmt(n) { return n.toLocaleString('tr-TR'); }
+function shopItem(id) { return shopItems.find(function (i) { return i.id === id; }); }
+function shopCatIcon(key) { const c = SHOP_CATS.find(function (x) { return x.key === key; }); return c ? c.icon : 'fa-cube'; }
+function shopCurrentList() {
+    return shopState.catKey === 'all' ? shopItems : shopItems.filter(function (i) { return i.cat === shopState.catKey; });
+}
+
+function shopMakeEnv(renderer) {
+    try {
+        const envScene = new THREE.Scene();
+        const geo = new THREE.SphereGeometry(10, 24, 16);
+        const colors = [];
+        const pos = geo.attributes.position;
+        const c0 = new THREE.Color(0x15151c), c1 = new THREE.Color(0xb8c4d8), tmp = new THREE.Color();
+        for (let i = 0; i < pos.count; i++) {
+            const t = (pos.getY(i) / 10 + 1) / 2;
+            tmp.lerpColors(c0, c1, Math.pow(t, 1.2));
+            colors.push(tmp.r, tmp.g, tmp.b);
+        }
+        geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        envScene.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+        const panel = function (w, h, x, y, z, col, k) {
+            const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide }));
+            m.position.set(x, y, z);
+            m.lookAt(0, 0, 0);
+            envScene.add(m);
+        };
+        panel(6, 3, 0, 6, 4, 0xffffff, 6);
+        panel(3, 5, -7, 2, 2, 0xaaccff, 4);
+        panel(3, 5, 7, 1, -3, 0xffddaa, 3);
+        const pm = new THREE.PMREMGenerator(renderer);
+        const rt = pm.fromScene(envScene, 0.04);
+        pm.dispose();
+        return rt.texture;
+    } catch (e) {
+        return null;
+    }
+}
+
+function shopMakeStage(renderer) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 0.55));
+    const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(3.5, 5, 4.5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0x9db8ff, 1.0); rim.position.set(-4, 2.5, -4); scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xffd9b0, 0.5); fill.position.set(-3, -1, 3); scene.add(fill);
+    const accent = new THREE.PointLight(0xffffff, 0.9, 12); accent.position.set(0, 0.5, 3.2); scene.add(accent);
+    const env = shopMakeEnv(renderer);
+    if (env) scene.environment = env;
+
+    const pivot = new THREE.Group();
+    scene.add(pivot);
+
+    const ped = new THREE.Group();
+    ped.add(new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.7, 0.16, 48), new THREE.MeshStandardMaterial({ color: 0x1c1917, metalness: 0.8, roughness: 0.35 })));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.52, 0.022, 8, 64).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xc59b27 }));
+    ring.position.y = 0.08;
+    ped.add(ring);
+    scene.add(ped);
+
+    return { scene: scene, camera: camera, pivot: pivot, ped: ped, ring: ring, accent: accent };
+}
+
+function shopPlaceModel(stage, model) {
+    const holder = new THREE.Group();
+    holder.add(model);
+    model.rotation.z = model.userData.tilt || 0;
+    holder.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const c = box.getCenter(new THREE.Vector3());
+    model.position.set(-c.x, -c.y, -c.z);
+    const s = 3.3 / Math.max(size.x, size.y, size.z);
+    holder.scale.setScalar(s);
+    stage.pivot.add(holder);
+    stage.ped.position.y = -(size.y * s) / 2 - 0.2;
+    return holder;
+}
+
+function shopDispose(obj) {
+    obj.traverse(function (o) {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) {
+            if (Array.isArray(o.material)) o.material.forEach(function (m) { m.dispose(); });
+            else o.material.dispose();
+        }
+    });
+}
+
+function shopSetupRenderer(r) {
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    r.outputEncoding = THREE.sRGBEncoding;
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.1;
+}
+
+function shopInit3D() {
+    const st = shopState;
+    const canvas = document.getElementById('shopCanvas');
+    const nogl = document.getElementById('shopNoGL');
+    if (typeof THREE === 'undefined') { st.glOk = false; nogl.classList.remove('hidden'); return; }
+    try {
+        st.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    } catch (e) {
+        st.glOk = false; nogl.classList.remove('hidden'); return;
+    }
+    shopSetupRenderer(st.renderer);
+    st.stage = shopMakeStage(st.renderer);
+
+    canvas.addEventListener('pointerdown', function (e) {
+        st.dragging = true; st.lastX = e.clientX; st.lastY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+        try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    canvas.addEventListener('pointermove', function (e) {
+        if (!st.dragging) return;
+        st.rotY += (e.clientX - st.lastX) * 0.01;
+        st.rotX = Math.max(-0.6, Math.min(0.6, st.rotX + (e.clientY - st.lastY) * 0.005));
+        st.lastX = e.clientX; st.lastY = e.clientY;
+    });
+    const end = function () { st.dragging = false; canvas.style.cursor = 'grab'; };
+    canvas.addEventListener('pointerup', end);
+    canvas.addEventListener('pointercancel', end);
+    canvas.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        shopZoom(e.deltaY * 0.0008);
+    }, { passive: false });
+
+    if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(function () { shopResize(); }).observe(document.getElementById('shopViewer'));
+    }
+    window.addEventListener('resize', shopResize);
+}
+
+function shopResize() {
+    const st = shopState;
+    if (!st.renderer) return;
+    const el = document.getElementById('shopViewer');
+    const w = el.clientWidth, h = el.clientHeight;
+    if (!w || !h) return;
+    st.renderer.setSize(w, h, false);
+    st.stage.camera.aspect = w / h;
+    st.stage.camera.updateProjectionMatrix();
+    shopFrameCamera();
+}
+
+function shopFrameCamera() {
+    const st = shopState;
+    if (!st.stage) return;
+    const cam = st.stage.camera;
+    const base = 2.75 / Math.tan((cam.fov * Math.PI / 180) / 2);
+    const dist = (base / Math.min(1, cam.aspect * 0.9)) * st.zoom;
+    cam.position.set(0, 0.7 * (dist / 8), dist);
+    cam.lookAt(0, -0.1, 0);
+}
+
+function shopLoop(now) {
+    const st = shopState;
+    if (!st.running) return;
+    st.raf = requestAnimationFrame(shopLoop);
+    const t = now / 1000;
+    if (st.auto && !st.dragging) st.rotY += 0.007;
+    const sg = st.stage;
+    sg.pivot.rotation.y = st.rotY;
+    sg.pivot.rotation.x = st.rotX;
+    sg.pivot.position.y = st.floating ? Math.sin(t * 1.4) * 0.07 : 0;
+    sg.accent.intensity = 0.8 + Math.sin(t * 2) * 0.2;
+    st.renderer.render(sg.scene, sg.camera);
+}
+function shopStart() {
+    const st = shopState;
+    if (!st.glOk || !st.renderer || st.running) return;
+    st.running = true;
+    st.raf = requestAnimationFrame(shopLoop);
+}
+function shopStop() {
+    const st = shopState;
+    st.running = false;
+    if (st.raf) cancelAnimationFrame(st.raf);
+    st.raf = 0;
+}
+
+function shopLoadModel(item) {
+    const st = shopState;
+    if (!st.glOk || !st.stage) return;
+    if (st.loadedId === item.id) return;
+    const sg = st.stage;
+    if (st.holder) { sg.pivot.remove(st.holder); shopDispose(st.holder); st.holder = null; }
+    const model = buildModel(item.model);
+    st.holder = shopPlaceModel(sg, model);
+    st.floating = !!model.userData.float;
+    st.loadedId = item.id;
+    const rc = SHOP_RARITY[item.rarity].color;
+    sg.ring.material.color.set(rc);
+    sg.accent.color.set(rc);
+}
+
+/* ----- thumbnail üretimi ----- */
+function shopEnsureThumbRenderer() {
+    const st = shopState;
+    if (st.thumbRenderer) return;
+    st.thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    st.thumbRenderer.setPixelRatio(1);
+    st.thumbRenderer.setSize(224, 224, false);
+    st.thumbRenderer.outputEncoding = THREE.sRGBEncoding;
+    st.thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    st.thumbRenderer.toneMappingExposure = 1.1;
+    st.thumbRenderer.setClearColor(0x000000, 0);
+    st.thumbStage = shopMakeStage(st.thumbRenderer);
+    st.thumbStage.ped.visible = false;
+}
+function shopRenderThumb(item) {
+    const st = shopState;
+    const sg = st.thumbStage;
+    const model = buildModel(item.model);
+    const holder = shopPlaceModel(sg, model);
+    sg.pivot.rotation.set(0.1, 0.55, 0);
+    sg.camera.aspect = 1;
+    sg.camera.updateProjectionMatrix();
+    sg.camera.position.set(0, 0.6, 9);
+    sg.camera.lookAt(0, -0.1, 0);
+    sg.accent.color.set(SHOP_RARITY[item.rarity].color);
+    st.thumbRenderer.render(sg.scene, sg.camera);
+    const url = st.thumbRenderer.domElement.toDataURL('image/png');
+    sg.pivot.remove(holder);
+    shopDispose(holder);
+    return url;
+}
+function shopQueueThumbs() {
+    const st = shopState;
+    if (!st.glOk) return;
+    const order = shopCurrentList().concat(shopItems);
+    order.forEach(function (it) {
+        if (!st.thumbs[it.id] && st.thumbQueue.indexOf(it.id) < 0) st.thumbQueue.push(it.id);
+    });
+    if (!st.thumbBusy) shopProcessThumb();
+}
+function shopProcessThumb() {
+    const st = shopState;
+    const id = st.thumbQueue.shift();
+    if (!id) { st.thumbBusy = false; return; }
+    st.thumbBusy = true;
+    try {
+        shopEnsureThumbRenderer();
+        const url = shopRenderThumb(shopItem(id));
+        st.thumbs[id] = url;
+        const holder = document.querySelector('[data-thumb="' + id + '"]');
+        if (holder) holder.innerHTML = '<img src="' + url + '" alt="">';
+    } catch (e) {
+        console.log('thumb error', id, e);
+    }
+    setTimeout(shopProcessThumb, 16);
+}
+
+/* ----- arayüz ----- */
+function shopBuildCats() {
+    const box = document.getElementById('shopCats');
+    box.innerHTML = '';
+    SHOP_CATS.forEach(function (c) {
+        const count = c.key === 'all' ? shopItems.length : shopItems.filter(function (i) { return i.cat === c.key; }).length;
+        const b = document.createElement('button');
+        b.className = 'shop-chip' + (c.key === shopState.catKey ? ' active' : '');
+        b.setAttribute('data-cat', c.key);
+        b.innerHTML = '<i class="fa-solid ' + c.icon + ' mr-1"></i>' + c.name + ' (' + count + ')';
+        b.onclick = function () { shopSetCat(c.key); };
+        box.appendChild(b);
+    });
+}
+function shopSetCat(key) {
+    playSFX('tab');
+    shopState.catKey = key;
+    document.querySelectorAll('#shopCats .shop-chip').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-cat') === key);
+    });
+    shopRenderList();
+    const list = shopCurrentList();
+    if (!list.some(function (i) { return i.id === shopState.selectedId; })) shopSelect(list[0].id, true);
+    shopQueueThumbs();
+}
+function shopRenderList() {
+    const grid = document.getElementById('shopGrid');
+    grid.innerHTML = shopCurrentList().map(function (it) {
+        const r = SHOP_RARITY[it.rarity];
+        const thumb = shopState.thumbs[it.id];
+        return '<button class="shop-card' + (it.id === shopState.selectedId ? ' sel' : '') + '" data-id="' + it.id + '" style="--rar:' + r.color + ';--rar-soft:' + r.color + '55" onclick="shopSelect(\'' + it.id + '\')">' +
+            '<div class="shop-thumb" data-thumb="' + it.id + '">' +
+            (thumb ? '<img src="' + thumb + '" alt="">' : '<i class="fa-solid ' + shopCatIcon(it.cat) + ' text-3xl text-stone-500"></i>') +
+            '</div>' +
+            '<div class="p-2">' +
+            '<div class="text-[9px] font-cinzel font-bold tracking-widest" style="color:' + r.color + '">' + r.label + '</div>' +
+            '<div class="text-xs font-semibold text-stone-900 leading-tight truncate">' + it.name + '</div>' +
+            '<div class="mt-1 flex items-center space-x-1 text-[11px] font-mono text-amber-700"><i class="fa-solid fa-coins text-[10px]"></i><span>' + shopFmt(it.price) + '</span><span class="text-stone-500">Mon</span></div>' +
+            '</div></button>';
+    }).join('');
+}
+function shopRenderDetail(item) {
+    const r = SHOP_RARITY[item.rarity];
+    const cat = SHOP_CATS.find(function (c) { return c.key === item.cat; });
+    const stats = Object.keys(item.stats).map(function (k) {
+        return '<div><div class="flex justify-between text-[10px] text-stone-600 mb-0.5"><span>' + k + '</span><span class="font-mono">' + item.stats[k] + '</span></div>' +
+            '<div class="shop-stat-bar"><div class="shop-stat-fill" style="width:' + item.stats[k] + '%;background:' + r.color + '"></div></div></div>';
+    }).join('');
+    const box = document.getElementById('shopDetail');
+    box.classList.remove('animate-fade-in');
+    void box.offsetWidth;
+    box.classList.add('animate-fade-in');
+    box.innerHTML =
+        '<div class="flex flex-col md:flex-row md:items-stretch gap-4">' +
+        '<div class="flex-1 min-w-0">' +
+        '<div class="flex items-center gap-2 mb-1 text-[10px] font-cinzel font-bold tracking-widest">' +
+        '<span class="px-2 py-0.5 rounded text-white" style="background:' + r.color + '">' + r.label + '</span>' +
+        '<span class="px-2 py-0.5 rounded bg-ink-black text-amber-200"><i class="fa-solid ' + cat.icon + ' mr-1"></i>' + cat.name + '</span></div>' +
+        '<h2 class="text-lg font-cinzel font-black tracking-wide text-ink-black mb-1">' + item.name.toUpperCase() + '</h2>' +
+        '<p class="font-serif text-sm text-stone-800 leading-relaxed mb-3">' + item.desc + '</p>' +
+        '<div class="grid grid-cols-2 gap-x-4 gap-y-2">' + stats + '</div></div>' +
+        '<div class="md:w-48 shrink-0 flex flex-col justify-end gap-2">' +
+        '<div class="gold-border-box bg-parchment-dark/40 rounded p-3 text-center">' +
+        '<div class="text-[10px] font-cinzel font-bold tracking-widest text-stone-500 mb-1">FİYAT</div>' +
+        '<div class="flex items-center justify-center space-x-2 text-xl font-mono font-bold text-amber-700"><i class="fa-solid fa-coins"></i><span>' + shopFmt(item.price) + '</span><span class="text-sm text-stone-600">Mon</span></div></div>' +
+        '<button disabled class="w-full flex items-center justify-center space-x-2 py-2 rounded bg-stone-400/40 text-stone-500 text-[10px] font-cinzel font-bold tracking-widest cursor-not-allowed border border-stone-400/40">' +
+        '<i class="fa-solid fa-lock"></i><span>ÖNİZLEME - SATIN ALINAMAZ</span></button></div></div>';
+    document.getElementById('shopViewRarity').textContent = r.label + ' · ' + cat.name;
+    document.getElementById('shopViewRarity').style.color = r.color;
+    document.getElementById('shopViewName').textContent = item.name;
+    document.getElementById('shopViewer').style.background =
+        'radial-gradient(circle at 50% 62%, ' + r.color + '40 0%, #14110f 62%, #0b0a09 100%)';
+}
+function shopSelect(id, silent) {
+    const st = shopState;
+    const item = shopItem(id);
+    if (!item) return;
+    if (!silent) playSFX('select');
+    st.selectedId = id;
+    document.querySelectorAll('#shopGrid .shop-card').forEach(function (c) {
+        c.classList.toggle('sel', c.getAttribute('data-id') === id);
+    });
+    shopRenderDetail(item);
+    shopLoadModel(item);
+}
+function shopMoveSelection(dir) {
+    const list = shopCurrentList();
+    let i = list.findIndex(function (x) { return x.id === shopState.selectedId; });
+    i = (i + dir + list.length) % list.length;
+    shopSelect(list[i].id);
+    const card = document.querySelector('#shopGrid .shop-card[data-id="' + list[i].id + '"]');
+    if (card && card.scrollIntoView) card.scrollIntoView({ block: 'nearest' });
+}
+function shopToggleAuto() {
+    playSFX('click');
+    shopState.auto = !shopState.auto;
+    document.getElementById('shopBtnAuto').style.opacity = shopState.auto ? '1' : '0.5';
+}
+function shopZoom(d) {
+    shopState.zoom = Math.max(0.55, Math.min(1.8, shopState.zoom + d));
+    shopFrameCamera();
+}
+function shopResetView() {
+    playSFX('click');
+    shopState.rotY = 0.6; shopState.rotX = 0.12; shopState.zoom = 1; shopState.auto = true;
+    document.getElementById('shopBtnAuto').style.opacity = '1';
+    shopFrameCamera();
+}
+
+function renderShopView() {
+    const st = shopState;
+    if (!st.inited) {
+        st.inited = true;
+        shopBuildCats();
+        shopInit3D();
+        st.selectedId = shopItems[0].id;
+    }
+    shopRenderList();
+    shopSelect(st.selectedId, true);
+    requestAnimationFrame(function () { shopResize(); shopStart(); });
+    shopQueueThumbs();
+}
+
     </script>
 </body>
 </html>
