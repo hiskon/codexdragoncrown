@@ -266,7 +266,7 @@
             color: #f4d77a !important;
             box-shadow: 0 0 12px rgba(197, 155, 39, 0.5);
         }
-        .shop-chip {
+        .shop-chip, .codex-chip {
             font-family: 'Cinzel', serif;
             font-weight: 700;
             font-size: 10px;
@@ -279,8 +279,8 @@
             transition: all 0.15s ease;
             white-space: nowrap;
         }
-        .shop-chip:hover { background: #d3cbbe; }
-        .shop-chip.active {
+        .shop-chip:hover, .codex-chip:hover { background: #d3cbbe; }
+        .shop-chip.active, .codex-chip.active {
             background: linear-gradient(180deg, #2b2927 0%, #121110 100%);
             color: #f4d77a;
             border-color: #c59b27;
@@ -305,6 +305,108 @@
         .shop-thumb img { width: 100%; height: 100%; object-fit: contain; }
         .shop-stat-bar { height: 5px; background: rgba(120,110,90,0.3); border-radius: 3px; overflow: hidden; }
         .shop-stat-fill { height: 100%; border-radius: 3px; }
+
+        /* ---------- ENVANTER ---------- */
+        .rar-common    { --rar: #9ca3af; --glow: rgba(156,163,175,0.30); --rar-text: #6b7280; }
+        .rar-rare      { --rar: #3b82f6; --glow: rgba(59,130,246,0.60);  --rar-text: #1d4ed8; }
+        .rar-epic      { --rar: #c83823; --glow: rgba(200,56,35,0.65);   --rar-text: #9a1f10; }
+        .rar-legendary { --rar: #e0b43a; --glow: rgba(224,180,58,0.80);  --rar-text: #a16207; }
+        @keyframes legendPulse {
+            0%, 100% { box-shadow: 0 0 6px 0 var(--glow), inset 0 0 8px var(--glow); }
+            50%      { box-shadow: 0 0 18px 3px var(--glow), inset 0 0 14px var(--glow); }
+        }
+        @keyframes rareFlicker {
+            0%, 100% { box-shadow: 0 0 8px 0 var(--glow), inset 0 0 8px var(--glow); }
+            50%      { box-shadow: 0 0 12px 1px var(--glow), inset 0 0 10px var(--glow); }
+        }
+
+        .inv-paperdoll {
+            display: grid;
+            grid-template-columns: 76px minmax(0, 1fr) 76px;
+            gap: 6px;
+            align-items: stretch;
+        }
+        .inv-col { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+        .inv-col-left  .inv-slot:nth-child(2),
+        .inv-col-left  .inv-slot:nth-child(3) { transform: translateX(10px); }
+        .inv-col-right .inv-slot:nth-child(2),
+        .inv-col-right .inv-slot:nth-child(3) { transform: translateX(-10px); }
+        .inv-sil { min-height: 340px; }
+
+        .inv-slot {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            width: 76px; background: none; border: none; padding: 0; cursor: pointer;
+        }
+        .inv-slot-box {
+            width: 60px; height: 60px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            border: 2px solid rgba(120,110,90,0.45);
+            background: rgba(232,227,213,0.35);
+            color: rgba(87,83,78,0.28);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .inv-slot:hover .inv-slot-box { transform: scale(1.06); border-color: #c59b27; }
+        .inv-slot.filled .inv-slot-box {
+            border-color: var(--rar); color: var(--rar);
+            background: radial-gradient(circle at 50% 40%, #2b2927 0%, #121110 85%);
+            box-shadow: 0 0 8px var(--glow), inset 0 0 8px var(--glow);
+        }
+        .inv-slot.filled.rar-rare .inv-slot-box { animation: rareFlicker 2.8s ease-in-out infinite; }
+        .inv-slot.filled.rar-epic .inv-slot-box { animation: rareFlicker 2.2s ease-in-out infinite; }
+        .inv-slot.filled.rar-legendary .inv-slot-box { animation: legendPulse 2.4s ease-in-out infinite; }
+        .inv-slot.sel .inv-slot-box { outline: 2px solid #ffffff; outline-offset: 1px; border-color: #c59b27; }
+        .inv-slot-name {
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 9px; line-height: 1.15;
+            text-align: center; color: #78716c; max-height: 2.4em; overflow: hidden; width: 100%;
+        }
+        .inv-slot.filled .inv-slot-name { color: var(--rar-text); }
+
+        .inv-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+        .inv-cell {
+            aspect-ratio: 1 / 1; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 5px; font-size: 24px;
+            border: 2px dashed rgba(120,110,90,0.35);
+            background: rgba(210,203,190,0.35);
+            color: #a8a29e; cursor: default;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .inv-cell.filled {
+            border-style: solid; border-color: var(--rar); color: var(--rar); cursor: pointer;
+            background: radial-gradient(circle at 50% 40%, #2b2927 0%, #121110 85%);
+            box-shadow: 0 0 8px var(--glow), inset 0 0 8px var(--glow);
+        }
+        .inv-cell.filled:hover { transform: translateY(-2px) scale(1.05); }
+        .inv-cell.filled.rar-rare { animation: rareFlicker 2.8s ease-in-out infinite; }
+        .inv-cell.filled.rar-epic { animation: rareFlicker 2.2s ease-in-out infinite; }
+        .inv-cell.filled.rar-legendary { animation: legendPulse 2.4s ease-in-out infinite; }
+        .inv-cell.sel { outline: 2px solid #ffffff; outline-offset: 1px; }
+        .inv-cell.compat { outline: 2px dashed #c59b27; outline-offset: 2px; }
+        .inv-qty {
+            position: absolute; right: 4px; bottom: 2px;
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 10px;
+            color: #f4d77a; text-shadow: 0 1px 2px #000;
+        }
+
+        .inv-detail-icon {
+            width: 58px; height: 58px; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+            border: 3px solid var(--rar); color: var(--rar);
+            background: radial-gradient(circle at 50% 40%, #2b2927 0%, #121110 85%);
+            box-shadow: 0 0 12px var(--glow), inset 0 0 10px var(--glow);
+        }
+        .inv-stat-cell {
+            border: 1px solid rgba(197,155,39,0.4); border-radius: 4px; padding: 6px 10px;
+            background: rgba(211,203,190,0.4);
+        }
+        .inv-delta { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 10px; margin-left: 6px; }
+        .inv-delta.up { color: #15803d; }
+        .inv-delta.down { color: #b91c1c; }
+
+        @media (max-width: 1023px) {
+            .inv-paperdoll { max-width: 340px; margin: 0 auto; }
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
@@ -333,6 +435,10 @@
                 <i class="fa-solid fa-feather-pointed text-xs"></i>
                 <span>GÜNLÜK</span>
             </button>
+            <button id="tabBtnInventory" onclick="setTab('inventory')" class="px-3 py-1.5 rounded-sm text-neutral-400 hover:text-white transition flex items-center space-x-1">
+                <i class="fa-solid fa-suitcase text-xs"></i>
+                <span>ENVANTER</span>
+            </button>
             <span class="text-neutral-500 px-2 hidden lg:inline">RB</span>
         </nav>
 
@@ -360,10 +466,16 @@
 
         <!-- LEFT PANEL: CATEGORIES & LIST -->
         <section class="w-full lg:w-1/3 flex flex-col bg-parchment-light/85 backdrop-blur-sm rounded border border-neutral-300 shadow-md p-4 z-10 overflow-hidden">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <span class="font-cinzel font-black text-sm tracking-widest text-ink-black"><i class="fa-solid fa-database text-vermilion mr-2"></i>VERİTABANI</span>
+                <span class="text-[10px] font-cinzel text-stone-500 tracking-widest"><i class="fa-regular fa-bookmark mr-1"></i>FAVORİLER ÜSTTE</span>
+            </div>
+            <!-- Kategori Filtreleri -->
+            <div id="codexCats" class="grid grid-cols-2 gap-1.5 mb-3"></div>
             <!-- Search Bar -->
             <div class="relative mb-3">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-stone-500"></i>
-                <input type="text" id="searchInput" oninput="filterLocations()" placeholder="Arama yap..." 
+                <input type="text" id="searchInput" oninput="filterLocations()" placeholder="Canlı arama: ad, unvan, yer, lore..." 
                     class="w-full pl-8 pr-3 py-1.5 bg-parchment border border-stone-300 rounded text-xs text-ink-black placeholder-stone-500 focus:outline-none focus:border-vermilion focus:ring-1 focus:ring-vermilion transition">
             </div>
 
@@ -401,7 +513,7 @@
                         <span id="statRole" class="font-bold text-amber-700">Kanatlı Sürüngen</span>
                     </div>
                     <div class="flex justify-between border-b border-stone-300/60 pb-1">
-                        <span class="text-stone-500">Habitat:</span>
+                        <span class="text-stone-500">Haritadaki Yeri:</span>
                         <span id="statClimate" class="font-bold text-stone-800">Dağ Zirveleri</span>
                     </div>
                 </div>
@@ -434,6 +546,8 @@
                             <h1 id="loreTitle" class="text-3xl font-cinzel font-black tracking-wide text-ink-black">WYVERN</h1>
                         </div>
                         <span id="loreSubtitle" class="text-xs font-cinzel font-semibold text-vermilion tracking-widest uppercase mt-1 block">YARATIKLAR & CANAVARLAR</span>
+                        <div id="loreTitles" class="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5"></div>
+                        <div id="loreMapLoc" class="mt-1 text-[11px] text-stone-600"></div>
                     </div>
 
                     <div class="flex items-center space-x-2">
@@ -581,6 +695,50 @@
         </div>
     </main>
 
+    <!-- ===================== ENVANTER GÖRÜNÜMÜ ===================== -->
+    <main id="inventoryView" class="hidden relative flex-1 w-full paper-bg overflow-hidden flex flex-col lg:flex-row p-4 lg:p-6 gap-4 lg:gap-6">
+
+        <!-- SOL: Karakter & Ekipman Slotları (Paperdoll) -->
+        <section class="w-full lg:w-[34%] shrink-0 min-h-0 flex flex-col bg-parchment-light/85 backdrop-blur-sm rounded border border-neutral-300 shadow-md p-3 z-10 overflow-y-auto">
+            <div id="invChars" class="flex gap-2 mb-3"></div>
+            <div class="text-center mb-2">
+                <div id="invCharName" class="font-cinzel font-black text-lg tracking-widest text-ink-black">SHİNOBİ</div>
+                <div id="invCharTitle" class="text-[10px] font-cinzel font-semibold text-vermilion tracking-[0.3em] uppercase">Gölgelerin Çırağı</div>
+            </div>
+            <div id="invPaperdoll" class="inv-paperdoll"></div>
+            <div class="mt-3 text-[10px] text-stone-500 text-center leading-snug">
+                <i class="fa-solid fa-hand-pointer mr-1"></i>Çift tıkla: çantadaki eşyayı kuşan / slottaki eşyayı çıkar
+            </div>
+        </section>
+
+        <!-- ORTA: Izgara Çanta & Filtreler -->
+        <section class="flex-1 min-w-0 min-h-0 flex flex-col bg-parchment-light/70 backdrop-blur-sm rounded border border-neutral-300 shadow-md z-10 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-2 border-b border-stone-300/70 bg-parchment/70">
+                <span class="font-cinzel font-black tracking-wider text-sm text-ink-black"><i class="fa-solid fa-box-open text-vermilion mr-2"></i>ÇANTA</span>
+                <span id="invCount" class="text-[10px] font-cinzel font-bold tracking-widest bg-ink-black text-amber-200 px-2 py-0.5 rounded">0 EŞYA</span>
+            </div>
+            <div id="invFilters" class="flex flex-wrap gap-1.5 px-3 pt-3"></div>
+            <div class="flex-1 min-h-0 overflow-y-auto p-3">
+                <div id="invGrid" class="inv-grid"></div>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 border-t border-stone-300/70 bg-parchment/70 text-[10px] font-cinzel tracking-wide text-stone-600">
+                <span class="flex items-center space-x-1"><span class="inline-block w-3 h-3 rounded-sm border-2" style="border-color:#9ca3af"></span><span>Sıradan</span></span>
+                <span class="flex items-center space-x-1"><span class="inline-block w-3 h-3 rounded-sm border-2" style="border-color:#3b82f6"></span><span>Nadir</span></span>
+                <span class="flex items-center space-x-1"><span class="inline-block w-3 h-3 rounded-sm border-2" style="border-color:#c83823"></span><span>Epik</span></span>
+                <span class="flex items-center space-x-1"><span class="inline-block w-3 h-3 rounded-sm border-2" style="border-color:#e0b43a"></span><span>Efsanevi</span></span>
+            </div>
+        </section>
+
+        <!-- SAĞ: Eşya Detayı & İstatistikler -->
+        <section class="w-full lg:w-[30%] shrink-0 min-h-0 flex flex-col bg-parchment-light/95 backdrop-blur-md rounded border border-neutral-300 shadow-xl p-5 z-10 overflow-y-auto">
+            <div id="invDetail" class="animate-fade-in flex-1"></div>
+            <div class="mt-4 pt-3 border-t-2 border-stone-400/40">
+                <div class="text-[10px] font-cinzel font-bold tracking-widest text-stone-500 mb-2"><i class="fa-solid fa-chart-simple mr-1"></i>TOPLAM KARAKTER İSTATİSTİKLERİ</div>
+                <div id="invStats" class="grid grid-cols-2 gap-2"></div>
+            </div>
+        </section>
+    </main>
+
     <!-- ===================== MAĞAZA GÖRÜNÜMÜ (3D ÖNİZLEME) ===================== -->
     <main id="shopView" class="hidden relative flex-1 w-full paper-bg overflow-hidden flex flex-col lg:flex-row p-4 lg:p-6 gap-4 lg:gap-6">
 
@@ -596,7 +754,7 @@
                 <i class="fa-solid fa-eye mr-1"></i>Önizleme modu: ürünler döndürülerek incelenir, satın alınamaz.
             </div>
             <div id="shopCats" class="flex flex-wrap gap-1.5 mb-3"></div>
-            <div id="shopGrid" class="flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 gap-2 content-start"></div>
+            <div id="shopGrid" class="flex-1 min-h-0 overflow-y-auto pr-1 grid grid-cols-2 gap-2 content-start" style="grid-auto-rows:max-content"></div>
         </section>
 
         <!-- Sağ: 3D görüntüleyici + detay -->
@@ -658,224 +816,517 @@
     </footer>
 
     <script>
-        const regionsData = [
-            {
-                regionName: "YARATIKLAR & CANAVARLAR",
-                regionKey: "yaratiklar",
-                icon: "fa-dragon",
-                color: "text-red-700",
-                locations: [
-                    {
-                        id: "wyvern",
-                        name: "Wyvern",
-                        emoji: "🐉",
-                        iconClass: "fa-dragon",
-                        role: "Kanatlı Sürüngen",
-                        climate: "Dağ Zirveleri & Kayalıklar",
-                        image: "1.jpg",
-                        description: "Kanatlı, zehirli kuyruklu, dağ zirvelerinde yuvalanan tehlikeli yırtıcı ejderha soyu. Yüksekten süzülerek avlarına dikine dalış yapar ve zehirli iğnesiyle avını etkisiz hale getirir."
-                    },
-                    {
-                        id: "tazi",
-                        name: "Tazı",
-                        emoji: "🐺",
-                        iconClass: "fa-dog",
-                        role: "Av / Savaş Köpeği",
-                        climate: "Sarp Dağlar & Vadiler",
-                        image: "2.jpg",
-                        description: "Savaşçılar ve avcılar tarafından eğitilmiş, koku takibinde usta, acımasız av köpeği. Kaslı yapısı ve keskin dişleriyle sürü halinde saldırdığında düşman hatlarını darmadağın eder."
-                    },
-                    {
-                        id: "leechen",
-                        name: "Leechen",
-                        emoji: "👾",
-                        iconClass: "fa-worm",
-                        role: "Parazitik Yaratık",
-                        climate: "Bataklıklar & Nemli Zindanlar",
-                        image: "3.jpg",
-                        description: "Bataklık ve nemli zindanlarda yaşayan, kurbanlarının yaşam enerjisini emen parazitik yaratık. Karanlık ve durgun sularda pusuya yatarak yaklaştığınızı hissettiği an üzerinize yapışır."
-                    }
-                ]
+        /* ============================================================
+           ████  VERİTABANI / KODEKS VERİSİ (JSON) — BURAYI DÜZENLE  ████
+
+           YENİ KAYIT EKLEMEK için entries dizisine bir blok ekle:
+             id          : benzersiz kısa ad ("kara-ejder")
+             cat         : "characters" | "places" | "creatures" | "archives"
+             group       : listede başlık olarak görünen grup adı (groups içinde tanımlıysa ikonu/rengi gelir)
+             name        : kayıt adı
+             jp / en     : Japonca / İngilizce unvan (boş bırakılabilir)
+             emoji, icon : liste emojisi ve Font Awesome ikonu
+             role        : rol / tür
+             habitat     : yaşam alanı (isteğe bağlı)
+             mapLocation : haritadaki yeri (yazı olarak)
+             image       : resim dosya adı ("kenji.jpg"; index.html ile aynı klasöre koy), boşsa görsel çıkmaz
+             description : detaylı lore metni
+
+           KARAKTER EKLEMEK / DÜZENLEMEK: cat: "characters" olan bloklara bak
+           (id'leri char-shinobi, char-samuray, char-gece-loncasi ... diye başlar).
+           Yerler (cat: "places") ve yaratıklar (cat: "creatures") eski kayıtlarıyla aynen duruyor.
+           ============================================================ */
+        const codexData = {
+            "categories": [
+                {
+                    "key": "characters",
+                    "name": "KARAKTERLER",
+                    "icon": "fa-user"
+                },
+                {
+                    "key": "places",
+                    "name": "BÖLGELER",
+                    "icon": "fa-map-location-dot"
+                },
+                {
+                    "key": "creatures",
+                    "name": "YARATIKLAR",
+                    "icon": "fa-dragon"
+                },
+                {
+                    "key": "archives",
+                    "name": "ARŞİVLER",
+                    "icon": "fa-scroll"
+                }
+            ],
+            "groups": {
+                "YARATIKLAR & CANAVARLAR": {
+                    "icon": "fa-dragon",
+                    "color": "text-red-700"
+                },
+                "BATI BÖLGESİ": {
+                    "icon": "fa-sun",
+                    "color": "text-amber-700"
+                },
+                "DOĞU BÖLGESİ": {
+                    "icon": "fa-torii-gate",
+                    "color": "text-rose-700"
+                },
+                "KUZEY BÖLGESİ": {
+                    "icon": "fa-snowflake",
+                    "color": "text-cyan-700"
+                },
+                "OYUNCU KARAKTERLER": {
+                    "icon": "fa-user-ninja",
+                    "color": "text-vermilion"
+                },
+                "YAN KARAKTERLER": {
+                    "icon": "fa-users",
+                    "color": "text-stone-700"
+                },
+                "ARŞİV KAYITLARI": {
+                    "icon": "fa-scroll",
+                    "color": "text-amber-800"
+                }
             },
-            {
-                regionName: "BATI BÖLGESİ",
-                regionKey: "bati",
-                icon: "fa-sun",
-                color: "text-amber-700",
-                locations: [
-                    {
-                        id: "arraim",
-                        name: "Arraim",
-                        emoji: "🐪",
-                        iconClass: "fa-campground",
-                        role: "Vaha Kent & Ticaret",
-                        climate: "Çöl / Kavurucu Sıcak",
-                        description: "Çölün tam kalbinde, kavurucu sıcakların ve bitmek bilmeyen kum fırtınalarının ortasında yükselen bir vaha kent. Baharat tüccarlarının, gizemli kervanların ve çöl göçebelerinin durak noktasıdır. Gece çöktüğünde yakılan devasa meşaleler ve pazarlardaki egzotik kokularla canlılığa kavuşur."
-                    },
-                    {
-                        id: "pisa",
-                        name: "Pisa",
-                        emoji: "🐪",
-                        iconClass: "fa-water",
-                        role: "Su Kemerleri & Ticaret",
-                        climate: "Çöl / Serin Taş Yapı",
-                        description: "Sonsuz kum tepelerinin ardında yükselen, mimarisiyle ve devasa su kemerleriyle göz kamaştıran stratejik bir ticaret kenti. Çöl sıcağında serin kalabilen taş yapıları ve ticaret yollarını tutan kilit konumu sayesinde Batı'nın zenginlik merkezlerinden biridir."
-                    },
-                    {
-                        id: "burran",
-                        name: "Burran Kenti",
-                        emoji: "🐪",
-                        iconClass: "fa-shield-halved",
-                        role: "Askeri Şehir & Surlar",
-                        climate: "Sert Çöl İklimi",
-                        description: "Batı'nın sert ve acımasız doğasına uyum sağlamış, devasa çöl surlarıyla korunan askeri bir şehir. Sert iklimlerde dövülmüş çöl savaşçılarının ve kadim bilgelerin yetiştiği, disiplinin ve tabyaların ön planda olduğu aşılmaz bir kale gibidir."
-                    },
-                    {
-                        id: "arbor",
-                        name: "Arbor Kenti",
-                        emoji: "⛰️",
-                        iconClass: "fa-mountain-city",
-                        role: "Maden Kaynakları & Dağ Şehri",
-                        climate: "Dağ Rüzgarları / Sarp",
-                        description: "Sarp dağların eteklerinde ve yeşil vadi geçitlerinde kurulan, maden kaynakları bakımından zengin heybetli bir kent. Dağ rüzgarlarının eksik olmadığı bu şehir, hem savunma avantajı hem de heybetli manzarasıyla Batı'nın gurur kaynağıdır."
-                    },
-                    {
-                        id: "vrankalik",
-                        name: "Vrankalik Kenti",
-                        emoji: "🍇",
-                        iconClass: "fa-wine-glass",
-                        role: "Bağcılık & Şarap Üretimi",
-                        climate: "Ilıman Vadi",
-                        description: "Batı Bölgesi'nin neşeli ve hareketli yüzü. Devasa üzüm bağlarıyla çevrili olan bu şehir, diyarın en leziz şaraplarının üretildiği yerdir. Akşamları sokaklarından müzik, kahkaha ve kadeh sesleri eksik olmaz; tüccarların stresi attığı en popüler duraktır."
-                    },
-                    {
-                        id: "halia",
-                        name: "Halia",
-                        emoji: "🍇",
-                        iconClass: "fa-wheat-awn",
-                        role: "Huzurlu Ziraat Kenti",
-                        climate: "Verimli / Yeşil",
-                        description: "Üzüm bağları, zeytinlikler ve meyve bahçeleriyle sarmalanmış son derece huzurlu bir ziraat kenti. Batı'nın gıda ihtiyacının büyük kısmını karşılayan bu şehir, zenginliği ve doğayla iç içe olan sakin yaşam tarzıyla dikkat çeker."
-                    },
-                    {
-                        id: "tesu",
-                        name: "Tesu",
-                        emoji: "🍇",
-                        iconClass: "fa-masks-theater",
-                        role: "Kültür & Hasat Festivalleri",
-                        climate: "Sıcak & Misafirperver",
-                        description: "Şarap tüccarlarının, sanatkarların ve gurmelerin buluşma noktası. Batı Bölgesi'nin kültür ve lezzet durağı olan Tesu, her yıl düzenlenen hasat festivalleri ve renkli pazar yerleriyle diyarın en misafirperver yerleşimidir."
-                    },
-                    {
-                        id: "ocreya",
-                        name: "Ocreya",
-                        emoji: "🌊",
-                        iconClass: "fa-anchor",
-                        role: "Kök Boya & Tuz Limanı",
-                        climate: "Kireç Taşları / Deniz Kayalığı",
-                        image: "4.jpg",
-                        description: "Batı Bölgesi'nin kireç taşı kayalıkları üzerine kurulu, kök boya tüccarları ve tuz limanıyla ünlü müstahkem kıyı kenti."
-                    }
-                ]
-            },
-            {
-                regionName: "DOĞU BÖLGESİ",
-                regionKey: "dogu",
-                icon: "fa-torii-gate",
-                color: "text-rose-700",
-                locations: [
-                    {
-                        id: "svar",
-                        name: "Svar",
-                        emoji: "🏰",
-                        iconClass: "fa-monument",
-                        role: "Mistik Kuleler & Loncalar",
-                        climate: "Mistik / Sisli",
-                        description: "Doğu'nun mistik havasını iliklerinize kadar hissettiren, yüksek kuleleri ve mistik mimarisiyle öne çıkan kilit bir kent. Hem zengin tüccar loncalarına hem de gizemli ilim sahiplerine ev sahipliği yapar."
-                    },
-                    {
-                        id: "idoln",
-                        name: "İdoln Kalesi",
-                        emoji: "🏰",
-                        iconClass: "fa-chess-rook",
-                        role: "Sarp Askeri Üs",
-                        climate: "Rüzgarlı / Sarp Kayalık",
-                        description: "Krallığın Doğu sınırını koruyan, sarp kayalıkların üzerine inşa edilmiş geçilmez bir askeri üs. Efsanelere konu olmuş surları, tecrübeli muhafızları ve devasa gözetleme kuleleriyle Doğu'nun sarsılmaz kalkanıdır."
-                    },
-                    {
-                        id: "baskent",
-                        name: "Başkent",
-                        emoji: "🏰",
-                        iconClass: "fa-crown",
-                        role: "Kraliyet Metropolü",
-                        climate: "Ilıman / Görkemli",
-                        description: "Bütün diyarın kalbinin attığı, devasa metropol. Entrikaların, görkemli sarayların, soylu hanedanların ve krallığı yöneten kararların merkezidir. Zenginliğin ve ihtişamın yanında, en derin siyasi oyunlar da bu şehrin mermer kaplı sokaklarında döner."
-                    },
-                    {
-                        id: "merdorim",
-                        name: "Merdorim",
-                        emoji: "🏰",
-                        iconClass: "fa-landmark-dome",
-                        role: "Aristokrat Hanedanlar & Gotik Mimari",
-                        climate: "Tarihi / Serin",
-                        description: "Doğu'nun en köklü ve aristokrat ailelerinin yaşadığı, devasa tarihi binaları ve gotik mimarisiyle göz dolduran bir şehir. Gece olduğunda meşalelerle aydınlanan sokakları ve tarihi ihtişamı hem hayranlık hem de ürperti uyandırır."
-                    },
-                    {
-                        id: "iga",
-                        name: "Iga",
-                        emoji: "🐉",
-                        iconClass: "fa-ship",
-                        role: "Liman & Egzotik Ticaret",
-                        climate: "Deniz Esintisi / Egzotik",
-                        description: "Uzak denizlere açılan limanları, egzotik mimarisi ve gizemli denizcileriyle Doğu'nun dünyaya açılan kapısı. Farklı kültürlerin birleştiği, egzotik ticaret mallarının ve denizci efsanelerinin harmanlandığı oldukça renkli bir kıyı kentidir."
-                    }
-                ]
-            },
-            {
-                regionName: "KUZEY BÖLGESİ",
-                regionKey: "kuzey",
-                icon: "fa-snowflake",
-                color: "text-cyan-700",
-                locations: [
-                    {
-                        id: "prenir",
-                        name: "Prenir Vadisi",
-                        emoji: "❄️",
-                        iconClass: "fa-icicles",
-                        role: "Buz Tutmuş Vadi",
-                        climate: "Dondurucu / Karlı",
-                        description: "Dondurucu rüzgarların ve geçit vermez karlı dağların arasında gizlenmiş büyüleyici bir vadi. Buz tutmuş gölleri ve sessizliğiyle hem masalsı hem de ürpertici bir atmosfere sahiptir."
-                    },
-                    {
-                        id: "gothenburg",
-                        name: "Gothenburg Kenti",
-                        emoji: "❄️",
-                        iconClass: "fa-hammer",
-                        role: "Ahşap & Taş Yapılar / Demirciler",
-                        climate: "Kutup İklimi / Çetin",
-                        description: "Kuzey'in çetin iklim şartlarında dövülmüş, devasa ahşap ve taş yapılardan oluşan dirençli bir kent. Karlar altında asla pes etmeyen dayanıklı insanları, demircileri ve sert avcılarıyla tanınır."
-                    },
-                    {
-                        id: "elenor",
-                        name: "Elenor Krallığı",
-                        emoji: "👑",
-                        iconClass: "fa-fort-awesome",
-                        role: "Dondurucu Krallık Merkezi",
-                        climate: "Kutup Büyüsü / Buzul",
-                        description: "Kuzey'in kalbi ve efsanevi dondurucu krallık merkezi. Karlar altındaki taht odası, surlarını kaplayan buzul tabakası ve kadim kuzey büyüsüyle diyarın en heybetli ve en saygı uyandıran güç odaklarından biridir."
-                    },
-                    {
-                        id: "cicekli-orman",
-                        name: "Çiçekli Orman",
-                        emoji: "🌸",
-                        iconClass: "fa-tree",
-                        role: "Büyülü Şifa Ormanı",
-                        climate: "Aura Korumalı / Büyülü",
-                        description: "Kuzey'in dondurucu ayazının ve buzlarının ortasında bile büyülü bir şekilde rengarenk çiçek açan gizemli bir ormanlık bölge. Kadim doğa büyüsünün koruduğu bu alan, hem şifacıların hem de kuzey efsanelerini araştıranların uğrak noktasıdır."
-                    }
-                ]
-            }
-        ];
+            "entries": [
+                {
+                    "id": "wyvern",
+                    "cat": "creatures",
+                    "group": "YARATIKLAR & CANAVARLAR",
+                    "name": "Wyvern",
+                    "jp": "ワイバーン",
+                    "en": "The Mountain Drake",
+                    "emoji": "🐉",
+                    "icon": "fa-dragon",
+                    "role": "Kanatlı Sürüngen",
+                    "habitat": "Dağ Zirveleri & Kayalıklar",
+                    "mapLocation": "Dağ Zirveleri & Kayalıklar",
+                    "image": "1.jpg",
+                    "description": "Kanatlı, zehirli kuyruklu, dağ zirvelerinde yuvalanan tehlikeli yırtıcı ejderha soyu. Yüksekten süzülerek avlarına dikine dalış yapar ve zehirli iğnesiyle avını etkisiz hale getirir."
+                },
+                {
+                    "id": "tazi",
+                    "cat": "creatures",
+                    "group": "YARATIKLAR & CANAVARLAR",
+                    "name": "Tazı",
+                    "jp": "猟犬",
+                    "en": "The War Hound",
+                    "emoji": "🐺",
+                    "icon": "fa-dog",
+                    "role": "Av / Savaş Köpeği",
+                    "habitat": "Sarp Dağlar & Vadiler",
+                    "mapLocation": "Sarp Dağlar & Vadiler",
+                    "image": "2.jpg",
+                    "description": "Savaşçılar ve avcılar tarafından eğitilmiş, koku takibinde usta, acımasız av köpeği. Kaslı yapısı ve keskin dişleriyle sürü halinde saldırdığında düşman hatlarını darmadağın eder."
+                },
+                {
+                    "id": "leechen",
+                    "cat": "creatures",
+                    "group": "YARATIKLAR & CANAVARLAR",
+                    "name": "Leechen",
+                    "jp": "リーチェン",
+                    "en": "The Swamp Leech",
+                    "emoji": "👾",
+                    "icon": "fa-worm",
+                    "role": "Parazitik Yaratık",
+                    "habitat": "Bataklıklar & Nemli Zindanlar",
+                    "mapLocation": "Bataklıklar & Nemli Zindanlar",
+                    "image": "3.jpg",
+                    "description": "Bataklık ve nemli zindanlarda yaşayan, kurbanlarının yaşam enerjisini emen parazitik yaratık. Karanlık ve durgun sularda pusuya yatarak yaklaştığınızı hissettiği an üzerinize yapışır."
+                },
+                {
+                    "id": "arraim",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Arraim",
+                    "jp": "アライム",
+                    "en": "The Oasis City",
+                    "emoji": "🐪",
+                    "icon": "fa-campground",
+                    "role": "Vaha Kent & Ticaret",
+                    "habitat": "Çöl / Kavurucu Sıcak",
+                    "mapLocation": "Batı Bölgesi · Çöl / Kavurucu Sıcak",
+                    "image": "",
+                    "description": "Çölün tam kalbinde, kavurucu sıcakların ve bitmek bilmeyen kum fırtınalarının ortasında yükselen bir vaha kent. Baharat tüccarlarının, gizemli kervanların ve çöl göçebelerinin durak noktasıdır. Gece çöktüğünde yakılan devasa meşaleler ve pazarlardaki egzotik kokularla canlılığa kavuşur."
+                },
+                {
+                    "id": "pisa",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Pisa",
+                    "jp": "ピサ",
+                    "en": "City of Aqueducts",
+                    "emoji": "🐪",
+                    "icon": "fa-water",
+                    "role": "Su Kemerleri & Ticaret",
+                    "habitat": "Çöl / Serin Taş Yapı",
+                    "mapLocation": "Batı Bölgesi · Çöl / Serin Taş Yapı",
+                    "image": "",
+                    "description": "Sonsuz kum tepelerinin ardında yükselen, mimarisiyle ve devasa su kemerleriyle göz kamaştıran stratejik bir ticaret kenti. Çöl sıcağında serin kalabilen taş yapıları ve ticaret yollarını tutan kilit konumu sayesinde Batı'nın zenginlik merkezlerinden biridir."
+                },
+                {
+                    "id": "burran",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Burran Kenti",
+                    "jp": "ブラン城市",
+                    "en": "The Desert Fortress",
+                    "emoji": "🐪",
+                    "icon": "fa-shield-halved",
+                    "role": "Askeri Şehir & Surlar",
+                    "habitat": "Sert Çöl İklimi",
+                    "mapLocation": "Batı Bölgesi · Sert Çöl İklimi",
+                    "image": "",
+                    "description": "Batı'nın sert ve acımasız doğasına uyum sağlamış, devasa çöl surlarıyla korunan askeri bir şehir. Sert iklimlerde dövülmüş çöl savaşçılarının ve kadim bilgelerin yetiştiği, disiplinin ve tabyaların ön planda olduğu aşılmaz bir kale gibidir."
+                },
+                {
+                    "id": "arbor",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Arbor Kenti",
+                    "jp": "アーバー",
+                    "en": "The Mountain City",
+                    "emoji": "⛰️",
+                    "icon": "fa-mountain-city",
+                    "role": "Maden Kaynakları & Dağ Şehri",
+                    "habitat": "Dağ Rüzgarları / Sarp",
+                    "mapLocation": "Batı Bölgesi · Dağ Rüzgarları / Sarp",
+                    "image": "",
+                    "description": "Sarp dağların eteklerinde ve yeşil vadi geçitlerinde kurulan, maden kaynakları bakımından zengin heybetli bir kent. Dağ rüzgarlarının eksik olmadığı bu şehir, hem savunma avantajı hem de heybetli manzarasıyla Batı'nın gurur kaynağıdır."
+                },
+                {
+                    "id": "vrankalik",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Vrankalik Kenti",
+                    "jp": "ヴランカリク",
+                    "en": "The Vineyard City",
+                    "emoji": "🍇",
+                    "icon": "fa-wine-glass",
+                    "role": "Bağcılık & Şarap Üretimi",
+                    "habitat": "Ilıman Vadi",
+                    "mapLocation": "Batı Bölgesi · Ilıman Vadi",
+                    "image": "",
+                    "description": "Batı Bölgesi'nin neşeli ve hareketli yüzü. Devasa üzüm bağlarıyla çevrili olan bu şehir, diyarın en leziz şaraplarının üretildiği yerdir. Akşamları sokaklarından müzik, kahkaha ve kadeh sesleri eksik olmaz; tüccarların stresi attığı en popüler duraktır."
+                },
+                {
+                    "id": "halia",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Halia",
+                    "jp": "ハリア",
+                    "en": "The Farmland City",
+                    "emoji": "🍇",
+                    "icon": "fa-wheat-awn",
+                    "role": "Huzurlu Ziraat Kenti",
+                    "habitat": "Verimli / Yeşil",
+                    "mapLocation": "Batı Bölgesi · Verimli / Yeşil",
+                    "image": "",
+                    "description": "Üzüm bağları, zeytinlikler ve meyve bahçeleriyle sarmalanmış son derece huzurlu bir ziraat kenti. Batı'nın gıda ihtiyacının büyük kısmını karşılayan bu şehir, zenginliği ve doğayla iç içe olan sakin yaşam tarzıyla dikkat çeker."
+                },
+                {
+                    "id": "tesu",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Tesu",
+                    "jp": "テス",
+                    "en": "The Festival Town",
+                    "emoji": "🍇",
+                    "icon": "fa-masks-theater",
+                    "role": "Kültür & Hasat Festivalleri",
+                    "habitat": "Sıcak & Misafirperver",
+                    "mapLocation": "Batı Bölgesi · Sıcak & Misafirperver",
+                    "image": "",
+                    "description": "Şarap tüccarlarının, sanatkarların ve gurmelerin buluşma noktası. Batı Bölgesi'nin kültür ve lezzet durağı olan Tesu, her yıl düzenlenen hasat festivalleri ve renkli pazar yerleriyle diyarın en misafirperver yerleşimidir."
+                },
+                {
+                    "id": "ocreya",
+                    "cat": "places",
+                    "group": "BATI BÖLGESİ",
+                    "name": "Ocreya",
+                    "jp": "オクレヤ",
+                    "en": "The Salt Harbor",
+                    "emoji": "🌊",
+                    "icon": "fa-anchor",
+                    "role": "Kök Boya & Tuz Limanı",
+                    "habitat": "Kireç Taşları / Deniz Kayalığı",
+                    "mapLocation": "Batı Bölgesi · Kireç Taşları / Deniz Kayalığı",
+                    "image": "4.jpg",
+                    "description": "Batı Bölgesi'nin kireç taşı kayalıkları üzerine kurulu, kök boya tüccarları ve tuz limanıyla ünlü müstahkem kıyı kenti."
+                },
+                {
+                    "id": "svar",
+                    "cat": "places",
+                    "group": "DOĞU BÖLGESİ",
+                    "name": "Svar",
+                    "jp": "スヴァル",
+                    "en": "City of Towers",
+                    "emoji": "🏰",
+                    "icon": "fa-monument",
+                    "role": "Mistik Kuleler & Loncalar",
+                    "habitat": "Mistik / Sisli",
+                    "mapLocation": "Doğu Bölgesi · Mistik / Sisli",
+                    "image": "",
+                    "description": "Doğu'nun mistik havasını iliklerinize kadar hissettiren, yüksek kuleleri ve mistik mimarisiyle öne çıkan kilit bir kent. Hem zengin tüccar loncalarına hem de gizemli ilim sahiplerine ev sahipliği yapar."
+                },
+                {
+                    "id": "idoln",
+                    "cat": "places",
+                    "group": "DOĞU BÖLGESİ",
+                    "name": "İdoln Kalesi",
+                    "jp": "イドルン城",
+                    "en": "Idoln Fortress",
+                    "emoji": "🏰",
+                    "icon": "fa-chess-rook",
+                    "role": "Sarp Askeri Üs",
+                    "habitat": "Rüzgarlı / Sarp Kayalık",
+                    "mapLocation": "Doğu Bölgesi · Rüzgarlı / Sarp Kayalık",
+                    "image": "",
+                    "description": "Krallığın Doğu sınırını koruyan, sarp kayalıkların üzerine inşa edilmiş geçilmez bir askeri üs. Efsanelere konu olmuş surları, tecrübeli muhafızları ve devasa gözetleme kuleleriyle Doğu'nun sarsılmaz kalkanıdır."
+                },
+                {
+                    "id": "baskent",
+                    "cat": "places",
+                    "group": "DOĞU BÖLGESİ",
+                    "name": "Başkent",
+                    "jp": "首都",
+                    "en": "The Capital",
+                    "emoji": "🏰",
+                    "icon": "fa-crown",
+                    "role": "Kraliyet Metropolü",
+                    "habitat": "Ilıman / Görkemli",
+                    "mapLocation": "Doğu Bölgesi · Ilıman / Görkemli",
+                    "image": "",
+                    "description": "Bütün diyarın kalbinin attığı, devasa metropol. Entrikaların, görkemli sarayların, soylu hanedanların ve krallığı yöneten kararların merkezidir. Zenginliğin ve ihtişamın yanında, en derin siyasi oyunlar da bu şehrin mermer kaplı sokaklarında döner."
+                },
+                {
+                    "id": "merdorim",
+                    "cat": "places",
+                    "group": "DOĞU BÖLGESİ",
+                    "name": "Merdorim",
+                    "jp": "メルドリム",
+                    "en": "The Gothic Dynasty City",
+                    "emoji": "🏰",
+                    "icon": "fa-landmark-dome",
+                    "role": "Aristokrat Hanedanlar & Gotik Mimari",
+                    "habitat": "Tarihi / Serin",
+                    "mapLocation": "Doğu Bölgesi · Tarihi / Serin",
+                    "image": "",
+                    "description": "Doğu'nun en köklü ve aristokrat ailelerinin yaşadığı, devasa tarihi binaları ve gotik mimarisiyle göz dolduran bir şehir. Gece olduğunda meşalelerle aydınlanan sokakları ve tarihi ihtişamı hem hayranlık hem de ürperti uyandırır."
+                },
+                {
+                    "id": "iga",
+                    "cat": "places",
+                    "group": "DOĞU BÖLGESİ",
+                    "name": "Iga",
+                    "jp": "伊賀",
+                    "en": "The Port of Iga",
+                    "emoji": "🐉",
+                    "icon": "fa-ship",
+                    "role": "Liman & Egzotik Ticaret",
+                    "habitat": "Deniz Esintisi / Egzotik",
+                    "mapLocation": "Doğu Bölgesi · Deniz Esintisi / Egzotik",
+                    "image": "",
+                    "description": "Uzak denizlere açılan limanları, egzotik mimarisi ve gizemli denizcileriyle Doğu'nun dünyaya açılan kapısı. Farklı kültürlerin birleştiği, egzotik ticaret mallarının ve denizci efsanelerinin harmanlandığı oldukça renkli bir kıyı kentidir."
+                },
+                {
+                    "id": "prenir",
+                    "cat": "places",
+                    "group": "KUZEY BÖLGESİ",
+                    "name": "Prenir Vadisi",
+                    "jp": "プレニル渓谷",
+                    "en": "The Frozen Valley",
+                    "emoji": "❄️",
+                    "icon": "fa-icicles",
+                    "role": "Buz Tutmuş Vadi",
+                    "habitat": "Dondurucu / Karlı",
+                    "mapLocation": "Kuzey Bölgesi · Dondurucu / Karlı",
+                    "image": "",
+                    "description": "Dondurucu rüzgarların ve geçit vermez karlı dağların arasında gizlenmiş büyüleyici bir vadi. Buz tutmuş gölleri ve sessizliğiyle hem masalsı hem de ürpertici bir atmosfere sahiptir."
+                },
+                {
+                    "id": "gothenburg",
+                    "cat": "places",
+                    "group": "KUZEY BÖLGESİ",
+                    "name": "Gothenburg Kenti",
+                    "jp": "ゴーテンバーグ",
+                    "en": "The Smith City",
+                    "emoji": "❄️",
+                    "icon": "fa-hammer",
+                    "role": "Ahşap & Taş Yapılar / Demirciler",
+                    "habitat": "Kutup İklimi / Çetin",
+                    "mapLocation": "Kuzey Bölgesi · Kutup İklimi / Çetin",
+                    "image": "",
+                    "description": "Kuzey'in çetin iklim şartlarında dövülmüş, devasa ahşap ve taş yapılardan oluşan dirençli bir kent. Karlar altında asla pes etmeyen dayanıklı insanları, demircileri ve sert avcılarıyla tanınır."
+                },
+                {
+                    "id": "elenor",
+                    "cat": "places",
+                    "group": "KUZEY BÖLGESİ",
+                    "name": "Elenor Krallığı",
+                    "jp": "エレノア王国",
+                    "en": "The Frozen Kingdom",
+                    "emoji": "👑",
+                    "icon": "fa-fort-awesome",
+                    "role": "Dondurucu Krallık Merkezi",
+                    "habitat": "Kutup Büyüsü / Buzul",
+                    "mapLocation": "Kuzey Bölgesi · Kutup Büyüsü / Buzul",
+                    "image": "",
+                    "description": "Kuzey'in kalbi ve efsanevi dondurucu krallık merkezi. Karlar altındaki taht odası, surlarını kaplayan buzul tabakası ve kadim kuzey büyüsüyle diyarın en heybetli ve en saygı uyandıran güç odaklarından biridir."
+                },
+                {
+                    "id": "cicekli-orman",
+                    "cat": "places",
+                    "group": "KUZEY BÖLGESİ",
+                    "name": "Çiçekli Orman",
+                    "jp": "花の森",
+                    "en": "The Blossom Forest",
+                    "emoji": "🌸",
+                    "icon": "fa-tree",
+                    "role": "Büyülü Şifa Ormanı",
+                    "habitat": "Aura Korumalı / Büyülü",
+                    "mapLocation": "Kuzey Bölgesi · Aura Korumalı / Büyülü",
+                    "image": "",
+                    "description": "Kuzey'in dondurucu ayazının ve buzlarının ortasında bile büyülü bir şekilde rengarenk çiçek açan gizemli bir ormanlık bölge. Kadim doğa büyüsünün koruduğu bu alan, hem şifacıların hem de kuzey efsanelerini araştıranların uğrak noktasıdır."
+                },
+                {
+                    "id": "char-shinobi",
+                    "cat": "characters",
+                    "group": "OYUNCU KARAKTERLER",
+                    "name": "Shinobi",
+                    "jp": "忍",
+                    "en": "The Shadow",
+                    "emoji": "🥷",
+                    "icon": "fa-user-ninja",
+                    "role": "Oyuncu · Suikastçı",
+                    "habitat": "",
+                    "mapLocation": "Başkent · Gece Loncası",
+                    "image": "",
+                    "description": "Gölgelerde yürüyen, Kusarigama ve Kunai ile savaşan hafif suikastçı. "
+                },
+                {
+                    "id": "char-samuray",
+                    "cat": "characters",
+                    "group": "OYUNCU KARAKTERLER",
+                    "name": "Samuray",
+                    "jp": "侍",
+                    "en": "The Blade",
+                    "emoji": "⚔️",
+                    "icon": "fa-torii-gate",
+                    "role": "Oyuncu · Savaşçı",
+                    "habitat": "",
+                    "mapLocation": "Doğu Bölgesi · İdoln Kalesi",
+                    "image": "",
+                    "description": "Ağır tanklı, yavaştır. Gizlilik yapamaz ama silahı güçlüdür."
+                },
+                {
+                    "id": "char-tesu-festival",
+                    "cat": "characters",
+                    "group": "YAN KARAKTERLER",
+                    "name": "Tesu Festival Ustası",
+                    "jp": "祭りの長",
+                    "en": "Festival Master",
+                    "emoji": "🎭",
+                    "icon": "fa-masks-theater",
+                    "role": "Festival Ustası",
+                    "habitat": "",
+                    "mapLocation": "Batı Bölgesi · Tesu",
+                    "image": "",
+                    "description": "Tesu'nun hasat festivalini yöneten neşeli şehir ustası. "
+                },
+                {
+                    "id": "char-halia-koylu",
+                    "cat": "characters",
+                    "group": "YAN KARAKTERLER",
+                    "name": "Halia Köylüsü",
+                    "jp": "村人",
+                    "en": "Villager of Halia",
+                    "emoji": "🌾",
+                    "icon": "fa-wheat-awn",
+                    "role": "Köylü",
+                    "habitat": "",
+                    "mapLocation": "Batı Bölgesi · Halia",
+                    "image": "",
+                    "description": "Bataklıkta kaybolan şifacının peşinde yardım arayan köylü. "
+                },
+                {
+                    "id": "char-bilinmeyen-elci",
+                    "cat": "characters",
+                    "group": "YAN KARAKTERLER",
+                    "name": "Bilinmeyen Elçi",
+                    "jp": "名もなき使者",
+                    "en": "The Nameless Envoy",
+                    "emoji": "❓",
+                    "icon": "fa-user-secret",
+                    "role": "Şeytan Burnu Elçisi",
+                    "habitat": "",
+                    "mapLocation": "Bilinmiyor",
+                    "image": "",
+                    "description": "Kimliği bilinmeyen bir daire elçisi. Kimlik Objectives sekmesinde açıldığında bu kaydı güncelle. "
+                },
+                {
+                    "id": "arsiv-ejderha-tacinin-cokusu",
+                    "cat": "archives",
+                    "group": "ARŞİV KAYITLARI",
+                    "name": "Ejderha Tacı'nın Çöküşü",
+                    "jp": "竜冠の崩壊",
+                    "en": "The Fall of the Dragon Crown",
+                    "emoji": "👑",
+                    "icon": "fa-crown",
+                    "role": "Kadim Olay",
+                    "habitat": "",
+                    "mapLocation": "Tüm Paladia",
+                    "image": "",
+                    "description": "Taç Ejderhası'nın gücünü taşıyan kadim taç, krallığın dört bölgesine dağıldı. Kaydın devamı arşivcilerin elinde eksik; hikâyeyi buradan genişlet."
+                },
+                {
+                    "id": "arsiv-yedi-daire",
+                    "cat": "archives",
+                    "group": "ARŞİV KAYITLARI",
+                    "name": "Yedi Daire Antlaşması",
+                    "jp": "七つの輪の盟約",
+                    "en": "The Pact of the Seven Circles",
+                    "emoji": "🔴",
+                    "icon": "fa-circle-dot",
+                    "role": "Gizli Antlaşma",
+                    "habitat": "",
+                    "mapLocation": "Başkent · Gölgeler",
+                    "image": "",
+                    "description": "Şeytan Burnu'nu oluşturan yedi dairenin kuruluş kaydı. Her dairenin elçilerinin kimliği silinmiş; arşivde yalnızca daire sayıları kalmış."
+                },
+                {
+                    "id": "arsiv-kuzey-soguk",
+                    "cat": "archives",
+                    "group": "ARŞİV KAYITLARI",
+                    "name": "Kuzey'in Büyük Soğuğu",
+                    "jp": "北の大寒波",
+                    "en": "The Great Frost of the North",
+                    "emoji": "❄️",
+                    "icon": "fa-snowflake",
+                    "role": "Doğa Olayı",
+                    "habitat": "",
+                    "mapLocation": "Kuzey Bölgesi",
+                    "image": "",
+                    "description": "Elenor Krallığı'nı buzullara gömen ve Çiçekli Orman'ı koruyucu büyüyle saran kadim soğuk. Gothenburg demircileri bu yıllarda şehri ayakta tutmuş."
+                },
+                {
+                    "id": "arsiv-wyvern-sefer",
+                    "cat": "archives",
+                    "group": "ARŞİV KAYITLARI",
+                    "name": "Wyvern Avı Seferleri",
+                    "jp": "ワイバーン狩り",
+                    "en": "The Wyvern Hunts",
+                    "emoji": "🐉",
+                    "icon": "fa-dragon",
+                    "role": "Askeri Sefer",
+                    "habitat": "",
+                    "mapLocation": "Batı Bölgesi · Dağ Zirveleri",
+                    "image": "",
+                    "description": "Dağ zirvelerindeki Wyvern yuvalarını temizlemek için düzenlenen seferlerin kaydı. Tazı sürüleri bu seferlerde ilk kez savaşta kullanılmış."
+                }
+            ]
+        };
 
         let currentSelectedId = 'wyvern';
         let isMuted = false;
@@ -941,12 +1392,14 @@
                 codex: document.getElementById('codexView'),
                 skills: document.getElementById('skillsView'),
                 log: document.getElementById('logView'),
+                inventory: document.getElementById('inventoryView'),
                 shop: document.getElementById('shopView')
             };
             const buttons = {
                 codex: document.getElementById('tabBtnCodex'),
                 skills: document.getElementById('tabBtnSkills'),
-                log: document.getElementById('tabBtnLog')
+                log: document.getElementById('tabBtnLog'),
+                inventory: document.getElementById('tabBtnInventory')
             };
 
             const inactive = ['px-3', 'py-1.5', 'rounded-sm', 'text-neutral-400', 'hover:text-white', 'transition', 'flex', 'items-center', 'space-x-1'];
@@ -970,6 +1423,7 @@
 
             if (tab === 'skills') renderSkillView();
             if (tab === 'log') renderLogView();
+            if (tab === 'inventory' && typeof renderInvView === 'function') renderInvView();
             if (tab === 'shop' && typeof renderShopView === 'function') renderShopView();
         }
 
@@ -1257,7 +1711,7 @@
             // Kademe etiketleri (arka plan)
             for (let t = 0; t <= maxTier; t++) {
                 const y = PAD + t * GAP_Y + NODE_SIZE / 2;
-                svg += `<text x="6" y="${y + 3}" font-family="Cinzel, serif" font-size="9" fill="#a39a85" letter-spacing="1" transform="rotate(-90 10 ${y})">${TIER_NAMES[t] ? TIER_NAMES[t].toUpperCase() : ''}</text>`;
+                svg += `<text x="6" y="${y + 3}" font-family="Cinzel, serif" font-size="9" fill="#a39a85" letter-spacing="1" transform="rotate(-90 10 ${y})">${TIER_NAMES[t] ? TIER_NAMES[t].toLocaleUpperCase('tr-TR') : ''}</text>`;
             }
             cat.nodes.forEach(nd => {
                 nd.req.forEach(rid => {
@@ -1319,13 +1773,13 @@
                     </span>
                     <div class="min-w-0">
                         <div class="text-[10px] font-cinzel font-bold tracking-widest uppercase" style="color:${cat.color}">${cat.name}</div>
-                        <h2 class="text-xl font-cinzel font-black tracking-wide text-ink-black leading-tight">${nd.name.toUpperCase()}</h2>
+                        <h2 class="text-xl font-cinzel font-black tracking-wide text-ink-black leading-tight">${nd.name.toLocaleUpperCase('tr-TR')}</h2>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 mb-4 text-[10px] font-cinzel font-bold tracking-widest">
                     <span class="px-2 py-0.5 rounded text-white" style="background:${typeColor}">${TYPE_LABELS[nd.type]}</span>
-                    <span class="px-2 py-0.5 rounded bg-ink-black text-amber-200">KADEME ${nd.tier + 1} · ${TIER_NAMES[nd.tier].toUpperCase()}</span>
+                    <span class="px-2 py-0.5 rounded bg-ink-black text-amber-200">KADEME ${nd.tier + 1} · ${TIER_NAMES[nd.tier].toLocaleUpperCase('tr-TR')}</span>
                 </div>
 
                 <p class="font-serif text-sm text-stone-800 leading-relaxed mb-5 border-l-2 pl-3" style="border-color:${cat.color}">${nd.desc}</p>
@@ -1619,7 +2073,7 @@
                 <div class="flex items-start justify-between border-b-2 border-stone-400/40 pb-3 mb-5">
                     <div>
                         <span class="text-xs font-cinzel font-semibold tracking-widest uppercase ${q.type === 'ana' ? 'text-vermilion' : 'text-amber-700'}">${q.type === 'ana' ? 'ANA GÖREV' : 'YAN GÖREV'}</span>
-                        <h1 class="text-2xl md:text-3xl font-cinzel font-black tracking-wide text-ink-black mt-1">${q.title.toUpperCase()}</h1>
+                        <h1 class="text-2xl md:text-3xl font-cinzel font-black tracking-wide text-ink-black mt-1">${q.title.toLocaleUpperCase('tr-TR')}</h1>
                     </div>
                     <span class="text-[10px] font-cinzel font-bold tracking-widest px-2 py-1 rounded shrink-0 ${st.cls}">${st.label}</span>
                 </div>
@@ -1802,7 +2256,7 @@
 
             box.innerHTML = `
                 <div class="text-[10px] font-cinzel font-bold tracking-widest text-vermilion mb-1">${c.title} · HEDEF ${currentTargetIdx + 1}/${c.targets.length}</div>
-                <h2 class="text-2xl font-cinzel font-black tracking-wide text-ink-black mb-3">${t.revealed ? (t.name || 'İSİMSİZ').toUpperCase() : '???'}</h2>
+                <h2 class="text-2xl font-cinzel font-black tracking-wide text-ink-black mb-3">${t.revealed ? (t.name || 'İSİMSİZ').toLocaleUpperCase('tr-TR') : '???'}</h2>
                 ${visual}
                 <div class="flex flex-wrap items-center gap-2 mb-4 text-[10px] font-cinzel font-bold tracking-widest">${statusBadge}</div>
                 ${t.revealed && t.role ? `<div class="text-xs text-stone-600 mb-3"><i class="fa-solid fa-id-badge text-stone-400 mr-1.5"></i>${t.role}</div>` : ''}
@@ -1815,31 +2269,144 @@
         }
 
         /* ============================================================
-           KODEKS (mevcut) FONKSİYONLARI
+           KODEKS / VERİTABANI FONKSİYONLARI
+           (4 kategori + canlı arama + favoriler)
            ============================================================ */
+        let codexCat = 'creatures';
+
+        // Favoriler (tarayıcıda kalıcı; kullanılamazsa sadece oturum boyunca durur)
+        try {
+            JSON.parse(localStorage.getItem('paladia.bookmarks') || '[]').forEach(id => bookmarks.add(id));
+        } catch (e) {}
+        function saveBookmarks() {
+            try { localStorage.setItem('paladia.bookmarks', JSON.stringify([...bookmarks])); } catch (e) {}
+        }
+
+        function getEntry(id) {
+            return codexData.entries.find(e => e.id === id) || null;
+        }
+        function getCodexCat(key) {
+            return codexData.categories.find(c => c.key === key);
+        }
+        // Türkçe duyarlı sadeleştirme: İ/I/ı -> i, ç/ş/ğ/ö/ü -> c/s/g/o/u
+        function fold(str) {
+            return String(str || '').toLocaleLowerCase('tr-TR').replace(/ı/g, 'i')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+        function entryMatches(e, q) {
+            if (!q) return true;
+            const hay = fold([e.name, e.jp, e.en, e.role, e.habitat, e.mapLocation, e.group, e.description].join(' '));
+            return hay.includes(q);
+        }
+        function codexQuery() {
+            return fold(document.getElementById('searchInput').value.trim());
+        }
+        function codexRawQuery() {
+            return document.getElementById('searchInput').value.trim().replace(/[<>&"]/g, '');
+        }
+
+        // Listenin modelini kurar: favoriler en üstte, sonra gruplar
+        function buildCodexModel() {
+            const q = codexQuery();
+            const matching = codexData.entries.filter(e => e.cat === codexCat && entryMatches(e, q));
+            const favs = matching.filter(e => bookmarks.has(e.id));
+            const rest = matching.filter(e => !bookmarks.has(e.id));
+            const groups = [];
+            rest.forEach(e => {
+                let g = groups.find(x => x.name === e.group);
+                if (!g) {
+                    const meta = codexData.groups[e.group] || {};
+                    g = { name: e.group, icon: meta.icon || 'fa-folder', color: meta.color || 'text-stone-700', items: [] };
+                    groups.push(g);
+                }
+                g.items.push(e);
+            });
+            const flat = favs.concat(groups.flatMap(g => g.items));
+            return { favs, groups, flat, query: q };
+        }
+
+        function renderCodexCats() {
+            const q = codexQuery();
+            const box = document.getElementById('codexCats');
+            box.innerHTML = '';
+            codexData.categories.forEach(c => {
+                const count = codexData.entries.filter(e => e.cat === c.key && entryMatches(e, q)).length;
+                const b = document.createElement('button');
+                b.className = 'codex-chip' + (c.key === codexCat ? ' active' : '');
+                b.setAttribute('data-cat', c.key);
+                b.innerHTML = `<i class="fa-solid ${c.icon} mr-1"></i>${c.name} <span class="opacity-70">(${count})</span>`;
+                b.onclick = () => setCodexCat(c.key);
+                box.appendChild(b);
+            });
+        }
+
+        function setCodexCat(key) {
+            if (key === codexCat) return;
+            playSFX('tab');
+            codexCat = key;
+            const model = buildCodexModel();
+            renderLocationList();
+            const cur = getEntry(currentSelectedId);
+            if (!cur || cur.cat !== key) {
+                if (model.flat.length) selectLocation(model.flat[0].id, true);
+            }
+        }
+
+        function codexItemHtml(e) {
+            const fav = bookmarks.has(e.id);
+            return `
+                <div class="codex-row p-2 rounded cursor-pointer transition flex items-center justify-between border-b border-stone-300/40 hover:bg-parchment-dark/60 text-xs ${e.id === currentSelectedId ? 'item-selected' : 'text-stone-800'}" data-id="${e.id}" onclick="selectLocation('${e.id}')">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <span>${e.emoji}</span>
+                        <div class="min-w-0">
+                            <div class="font-semibold truncate">${e.name}</div>
+                            ${e.jp ? `<div class="font-japanese text-[10px] text-stone-500 truncate">${e.jp}</div>` : ''}
+                        </div>
+                    </div>
+                    <button class="codex-bm shrink-0 p-1 ${fav ? 'text-amber-600' : 'text-stone-400 hover:text-amber-600'}" title="${fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}" onclick="toggleBookmarkId('${e.id}', event)">
+                        <i class="${fav ? 'fa-solid' : 'fa-regular'} fa-bookmark text-[11px]"></i>
+                    </button>
+                </div>`;
+        }
+
         function renderLocationList() {
+            renderCodexCats();
             const listContainer = document.getElementById('locationList');
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const model = buildCodexModel();
             listContainer.innerHTML = '';
 
-            regionsData.forEach(reg => {
-                const matchingLocs = reg.locations.filter(loc => 
-                    loc.name.toLowerCase().includes(searchQuery) ||
-                    loc.description.toLowerCase().includes(searchQuery) ||
-                    reg.regionName.toLowerCase().includes(searchQuery)
-                );
+            if (!model.flat.length) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-stone-500 text-xs py-10">
+                        <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-stone-400"></i>
+                        <div class="font-cinzel tracking-widest">SONUÇ BULUNAMADI</div>
+                        <div class="mt-1">Bu kategoride "${codexRawQuery()}" ile eşleşen kayıt yok.</div>
+                    </div>`;
+                return;
+            }
 
-                if (matchingLocs.length === 0) return;
+            // FAVORİLER (en üstte)
+            if (model.favs.length) {
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between p-2 rounded bg-amber-200/60 border border-amber-500/40 text-xs font-cinzel font-bold text-amber-800';
+                header.innerHTML = `<div class="flex items-center space-x-2"><i class="fa-solid fa-bookmark"></i><span>FAVORİLER (${model.favs.length})</span></div>`;
+                listContainer.appendChild(header);
+                const wrap = document.createElement('div');
+                wrap.className = 'pl-2 space-y-1 my-1';
+                wrap.innerHTML = model.favs.map(codexItemHtml).join('');
+                listContainer.appendChild(wrap);
+            }
 
-                const isCollapsed = collapsedRegions.has(reg.regionKey) && !searchQuery;
+            model.groups.forEach(g => {
+                const isCollapsed = collapsedRegions.has(g.name) && !model.query;
 
                 const regionHeader = document.createElement('div');
-                regionHeader.className = `flex items-center justify-between p-2 rounded cursor-pointer bg-stone-300/60 hover:bg-stone-300 transition border border-stone-400/40 text-xs font-cinzel font-bold text-stone-800 ${reg.color}`;
-                regionHeader.onclick = () => toggleRegionCollapse(reg.regionKey);
+                regionHeader.className = `flex items-center justify-between p-2 rounded cursor-pointer bg-stone-300/60 hover:bg-stone-300 transition border border-stone-400/40 text-xs font-cinzel font-bold text-stone-800 ${g.color}`;
+                regionHeader.onclick = () => toggleRegionCollapse(g.name);
                 regionHeader.innerHTML = `
                     <div class="flex items-center space-x-2">
-                        <i class="fa-solid ${reg.icon}"></i>
-                        <span>${reg.regionName} (${matchingLocs.length})</span>
+                        <i class="fa-solid ${g.icon}"></i>
+                        <span>${g.name} (${g.items.length})</span>
                     </div>
                     <i class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-[10px] text-stone-500"></i>
                 `;
@@ -1848,22 +2415,7 @@
                 if (!isCollapsed) {
                     const locsWrapper = document.createElement('div');
                     locsWrapper.className = 'pl-2 space-y-1 my-1';
-
-                    matchingLocs.forEach(loc => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = `p-2 rounded cursor-pointer transition flex items-center justify-between border-b border-stone-300/40 hover:bg-parchment-dark/60 text-xs ${loc.id === currentSelectedId ? 'item-selected' : 'text-stone-800'}`;
-                        itemDiv.onclick = () => selectLocation(loc.id);
-
-                        itemDiv.innerHTML = `
-                            <div class="flex items-center space-x-2">
-                                <span>${loc.emoji}</span>
-                                <span class="font-semibold">${loc.name}</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-[9px] text-stone-400"></i>
-                        `;
-                        locsWrapper.appendChild(itemDiv);
-                    });
-
+                    locsWrapper.innerHTML = g.items.map(codexItemHtml).join('');
                     listContainer.appendChild(locsWrapper);
                 }
             });
@@ -1879,30 +2431,30 @@
             renderLocationList();
         }
 
+        // Canlı arama: her tuş vuruşunda listeyi anında süzer
         function filterLocations() {
             renderLocationList();
         }
 
-        function findLocation(id) {
-            for (const reg of regionsData) {
-                const found = reg.locations.find(l => l.id === id);
-                if (found) return { loc: found, regName: reg.regionName };
-            }
-            return null;
-        }
-
         function handleImageError(imgElem) {
             imgElem.onerror = null;
-            imgElem.src = `https://placehold.co/600x350/121110/c59b27?text=${encodeURIComponent(currentSelectedId.toUpperCase())}+(${imgElem.getAttribute('data-filename') || 'Görsel'})`;
+            imgElem.src = `https://placehold.co/600x350/121110/c59b27?text=${encodeURIComponent(currentSelectedId.toLocaleUpperCase('tr-TR'))}+(${imgElem.getAttribute('data-filename') || 'Görsel'})`;
         }
 
-        function selectLocation(id) {
-            playSFX('select');
-            currentSelectedId = id;
+        function updateBookmarkIcon() {
+            const iconBm = document.getElementById('iconBookmark');
+            iconBm.className = bookmarks.has(currentSelectedId)
+                ? 'fa-solid fa-bookmark text-amber-600 text-sm'
+                : 'fa-regular fa-bookmark text-sm';
+        }
 
-            const res = findLocation(id);
-            if (!res) return;
-            const { loc, regName } = res;
+        function selectLocation(id, silent) {
+            const loc = getEntry(id);
+            if (!loc) return;
+            if (!silent) playSFX('select');
+            currentSelectedId = id;
+            if (loc.cat !== codexCat) codexCat = loc.cat;
+            const regName = loc.group;
 
             renderLocationList();
 
@@ -1913,14 +2465,14 @@
             }
 
             document.getElementById('middleHeader').innerHTML = `<span>${loc.name}</span><span>${loc.emoji}</span>`;
-            document.getElementById('middleSnippet').textContent = `"${loc.description.substring(0, 95)}..."`;
+            document.getElementById('middleSnippet').textContent = `"${loc.description.substring(0, 95)}${loc.description.length > 95 ? '...' : ''}"`;
             document.getElementById('statRegion').textContent = regName;
             document.getElementById('statRole').textContent = loc.role;
-            document.getElementById('statClimate').textContent = loc.climate;
+            document.getElementById('statClimate').textContent = loc.mapLocation || loc.habitat || '-';
 
             const cardIcon = document.getElementById('cardIconLarge');
-            cardIcon.className = `fa-solid ${loc.iconClass || 'fa-landmark'} text-5xl text-stone-600/70`;
-            document.getElementById('cardRegionTag').textContent = regName.toUpperCase();
+            cardIcon.className = `fa-solid ${loc.icon || 'fa-landmark'} text-5xl text-stone-600/70`;
+            document.getElementById('cardRegionTag').textContent = regName.toLocaleUpperCase('tr-TR');
 
             // Dynamic Image Handling
             const imageWrapper = document.getElementById('imageWrapper');
@@ -1930,7 +2482,7 @@
             if (loc.image) {
                 entryImage.setAttribute('data-filename', loc.image);
                 entryImage.src = loc.image;
-                imageCaption.textContent = `${loc.name.toUpperCase()} - ${regName.toUpperCase()}`;
+                imageCaption.textContent = `${loc.name.toLocaleUpperCase('tr-TR')} - ${regName.toLocaleUpperCase('tr-TR')}`;
                 imageWrapper.classList.remove('hidden');
             } else {
                 imageWrapper.classList.add('hidden');
@@ -1942,26 +2494,42 @@
             loreContainer.classList.add('animate-fade-in');
 
             document.getElementById('loreEmoji').textContent = loc.emoji;
-            document.getElementById('loreTitle').textContent = loc.name.toUpperCase();
-            document.getElementById('loreSubtitle').textContent = regName.toUpperCase();
-            document.getElementById('loreTextMain').textContent = loc.description;
+            document.getElementById('loreTitle').textContent = loc.name.toLocaleUpperCase('tr-TR');
+            document.getElementById('loreSubtitle').textContent = regName.toLocaleUpperCase('tr-TR');
 
-            const iconBm = document.getElementById('iconBookmark');
-            if (bookmarks.has(id)) {
-                iconBm.className = 'fa-solid fa-bookmark text-amber-600 text-sm';
-            } else {
-                iconBm.className = 'fa-regular fa-bookmark text-sm';
-            }
+            // Japonca / İngilizce unvanlar
+            const titles = document.getElementById('loreTitles');
+            titles.innerHTML =
+                (loc.jp ? `<span class="font-japanese text-lg font-bold text-vermilion tracking-widest">${loc.jp}</span>` : '') +
+                (loc.en ? `<span class="font-cinzel text-xs italic text-stone-600 tracking-wide">${loc.en}</span>` : '');
+
+            // Haritadaki yeri
+            const mapLoc = document.getElementById('loreMapLoc');
+            mapLoc.innerHTML = (loc.mapLocation && loc.mapLocation !== '-')
+                ? `<i class="fa-solid fa-location-dot text-vermilion mr-1.5"></i>Haritadaki yeri: <b class="text-stone-800">${loc.mapLocation}</b>`
+                : '';
+
+            document.getElementById('loreTextMain').textContent = loc.description;
+            updateBookmarkIcon();
         }
 
+        // Sağ paneldeki yer imi butonu
         function toggleBookmark() {
+            toggleBookmarkId(currentSelectedId);
+        }
+
+        // Liste satırındaki yer imi ikonu (favoriler listenin en üstüne taşınır)
+        function toggleBookmarkId(id, ev) {
+            if (ev) ev.stopPropagation();
             playSFX('click');
-            if (bookmarks.has(currentSelectedId)) {
-                bookmarks.delete(currentSelectedId);
+            if (bookmarks.has(id)) {
+                bookmarks.delete(id);
             } else {
-                bookmarks.add(currentSelectedId);
+                bookmarks.add(id);
             }
-            selectLocation(currentSelectedId);
+            saveBookmarks();
+            renderLocationList();
+            updateBookmarkIcon();
         }
 
         function toggleTTS() {
@@ -1974,10 +2542,10 @@
                 return;
             }
 
-            const res = findLocation(currentSelectedId);
-            if (!res) return;
+            const entry = getEntry(currentSelectedId);
+            if (!entry) return;
 
-            const utterance = new SpeechSynthesisUtterance(`${res.loc.name}. ${res.loc.description}`);
+            const utterance = new SpeechSynthesisUtterance(`${entry.name}. ${entry.description}`);
             utterance.lang = 'tr-TR';
             utterance.rate = 0.95;
 
@@ -2028,9 +2596,10 @@
         document.addEventListener('keydown', (e) => {
             if (e.target && e.target.tagName === 'INPUT') return;
 
-            // Sekme kısayolları: Q = Yetenekler, E = Kodeks
+            // Sekme kısayolları: Q = Yetenekler, E = Kodeks, I veya W = Envanter
             if (e.key === 'q' || e.key === 'Q') { setTab('skills'); return; }
             if (e.key === 'e' || e.key === 'E') { setTab('codex'); return; }
+            if (e.key === 'i' || e.key === 'I' || e.key === 'w' || e.key === 'W') { setTab('inventory'); return; }
 
             if (currentTab === 'skills') {
                 // Sol / sağ: kategori değiştir
@@ -2053,9 +2622,10 @@
                 return;
             }
 
-            if (currentTab === 'log') return;
+            if (currentTab === 'log' || currentTab === 'inventory') return;
 
-            const allLocs = regionsData.flatMap(r => r.locations);
+            const allLocs = buildCodexModel().flat;
+            if (!allLocs.length) return;
             const currentIndex = allLocs.findIndex(item => item.id === currentSelectedId);
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -2070,7 +2640,7 @@
 
         window.onload = function() {
             renderLocationList();
-            selectLocation('wyvern');
+            selectLocation('wyvern', true);
         };
     </script>
 
@@ -2882,7 +3452,6 @@ function shopDispose(obj) {
 
 function shopSetupRenderer(r) {
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping;
     r.toneMappingExposure = 1.1;
 }
@@ -2995,7 +3564,6 @@ function shopEnsureThumbRenderer() {
     st.thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     st.thumbRenderer.setPixelRatio(1);
     st.thumbRenderer.setSize(224, 224, false);
-    st.thumbRenderer.outputEncoding = THREE.sRGBEncoding;
     st.thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping;
     st.thumbRenderer.toneMappingExposure = 1.1;
     st.thumbRenderer.setClearColor(0x000000, 0);
@@ -3103,7 +3671,7 @@ function shopRenderDetail(item) {
         '<div class="flex items-center gap-2 mb-1 text-[10px] font-cinzel font-bold tracking-widest">' +
         '<span class="px-2 py-0.5 rounded text-white" style="background:' + r.color + '">' + r.label + '</span>' +
         '<span class="px-2 py-0.5 rounded bg-ink-black text-amber-200"><i class="fa-solid ' + cat.icon + ' mr-1"></i>' + cat.name + '</span></div>' +
-        '<h2 class="text-lg font-cinzel font-black tracking-wide text-ink-black mb-1">' + item.name.toUpperCase() + '</h2>' +
+        '<h2 class="text-lg font-cinzel font-black tracking-wide text-ink-black mb-1">' + item.name.toLocaleUpperCase('tr-TR') + '</h2>' +
         '<p class="font-serif text-sm text-stone-800 leading-relaxed mb-3">' + item.desc + '</p>' +
         '<div class="grid grid-cols-2 gap-x-4 gap-y-2">' + stats + '</div></div>' +
         '<div class="md:w-48 shrink-0 flex flex-col justify-end gap-2">' +
@@ -3166,6 +3734,519 @@ function renderShopView() {
     shopSelect(st.selectedId, true);
     requestAnimationFrame(function () { shopResize(); shopStart(); });
     shopQueueThumbs();
+}
+
+    </script>
+
+    <!-- ===================== ENVANTER SCRIPTİ ===================== -->
+    <script>
+/* ============================================================
+   ████  ENVANTER VERİSİ — BURAYI DÜZENLE  ████
+
+   inventoryData : her karakterin SAHİP OLDUĞU tüm eşyalar (JSON).
+   equippedData  : her karakterin kuşandığı eşyanın id'si (slot -> id | null).
+                   Kuşanılan eşya çantada görünmez; çıkarınca çantaya döner.
+
+   YENİ EŞYA EKLEMEK için ilgili karakterin dizisine bir blok ekle:
+     id      : benzersiz kısa ad ('sh-yeni-kilic')
+     name    : eşya adı
+     cat     : 'weapon' | 'armor' | 'accessory' | 'consumable'
+     slot    : 'helmet' | 'armor' | 'gloves' | 'boots' | 'weapon1' | 'weapon2' | 'amulet' | 'ring'
+               (sarf malzemelerde slot yazma)
+     rarity  : 'common' | 'rare' | 'epic' | 'legendary'
+     icon    : Font Awesome ikonu ('fa-khanda')
+     atk, def, crit (%), hp : istatistik bonusları (olmayanı sil veya 0 yaz)
+     effects : ek efsunlar, yazı olarak ["+%15 Kritik Hasar", "+200 Can"]
+     lore    : hikaye yazısı
+     qty / use : sadece sarf malzemeler için adet ve etki yazısı
+
+   KARAKTER TEMEL DEĞERLERİ (INV_CHARS içinde base) en altta, karakter eklemek için
+   INV_CHARS + inventoryData + equippedData'ya aynı anahtarla (örn. 'ronin') blok ekle.
+   ============================================================ */
+
+const INV_RARITY = {
+    common:    { label: 'SIRADAN',  color: '#9ca3af', text: '#6b7280' },
+    rare:      { label: 'NADİR',    color: '#3b82f6', text: '#1d4ed8' },
+    epic:      { label: 'EPİK',     color: '#c83823', text: '#9a1f10' },
+    legendary: { label: 'EFSANEVİ', color: '#e0b43a', text: '#a16207' }
+};
+
+const INV_SLOTS = [
+    { key: 'helmet',  label: 'Miğfer',          icon: 'fa-helmet-safety', side: 'left'  },
+    { key: 'armor',   label: 'Zırh / Cübbe',    icon: 'fa-user-shield',   side: 'left'  },
+    { key: 'gloves',  label: 'Eldiven',         icon: 'fa-hand-fist',     side: 'left'  },
+    { key: 'boots',   label: 'Bacak & Çizme',   icon: 'fa-shoe-prints',   side: 'left'  },
+    { key: 'weapon1', label: 'Ana Silah',       icon: 'fa-khanda',        side: 'right' },
+    { key: 'weapon2', label: 'İkincil / Kalkan', icon: 'fa-shield-halved', side: 'right' },
+    { key: 'amulet',  label: 'Kolye / Tılsım',  icon: 'fa-gem',           side: 'right' },
+    { key: 'ring',    label: 'Yüzük',           icon: 'fa-ring',          side: 'right' }
+];
+
+const INV_CATS = [
+    { key: 'all',        label: 'TÜM EŞYALAR',  icon: 'fa-border-all' },
+    { key: 'weapon',     label: 'SİLAHLAR',     icon: 'fa-khanda' },
+    { key: 'armor',      label: 'ZIRHLAR',      icon: 'fa-shield-halved' },
+    { key: 'accessory',  label: 'AKSESUARLAR',  icon: 'fa-ring' },
+    { key: 'consumable', label: 'SARF',         icon: 'fa-flask' }
+];
+
+const INV_STATS = [
+    { key: 'atk',  label: 'Saldırı Gücü (ATK)', short: 'ATK',    icon: 'fa-burst',       suffix: ''  },
+    { key: 'def',  label: 'Savunma (DEF)',      short: 'DEF',    icon: 'fa-shield-halved', suffix: '' },
+    { key: 'crit', label: 'Kritik Şansı',       short: 'KRİTİK', icon: 'fa-bolt',        suffix: '%' },
+    { key: 'hp',   label: 'Can (HP)',           short: 'CAN',    icon: 'fa-heart',       suffix: ''  }
+];
+
+const INV_CHARS = {
+    shinobi: { name: 'SHİNOBİ', title: 'Gölgelerin Çırağı', icon: 'fa-user-ninja',  base: { atk: 40, def: 20, crit: 12, hp: 900 } },
+    samuray: { name: 'SAMURAY', title: 'Kızıl Kılıç',       icon: 'fa-torii-gate',  base: { atk: 52, def: 48, crit: 6,  hp: 1300 } }
+};
+
+const inventoryData = {
+    shinobi: [
+        /* --- Silahlar --- */
+        { id: 'sh-kusari-celik', name: 'Çelik Kusarigama', cat: 'weapon', slot: 'weapon1', rarity: 'common', icon: 'fa-link',
+          atk: 18, crit: 3, effects: [], lore: 'Iga\'nın çırak ustalarının verdiği sade orak ve zincir. Sağlam, dengeli, herkesin ilk silahı.' },
+        { id: 'sh-ninjato', name: 'Kuro Tsuki Ninjatō', cat: 'weapon', slot: 'weapon1', rarity: 'rare', icon: 'fa-moon',
+          atk: 34, crit: 10, effects: ['Çömelirken +%10 hasar'], lore: 'Ay ışığını yutan koyu çelikten düz ninja kılıcı. Sırtına bağlanır, duvarlara dayanıp merdiven olur.' },
+        { id: 'sh-kusari-zehir', name: 'Zehir Kuyruğu', cat: 'weapon', slot: 'weapon1', rarity: 'epic', icon: 'fa-skull-crossbones',
+          atk: 46, crit: 8, effects: ['Vuruşlar 6 sn zehir bırakır', '+%10 Kritik Hasar'], lore: 'Wyvern kuyruğundan esinlenen zümrüt orak ve dikenli ağırlık. Zincirin her halkası zehir sızdırır.' },
+        { id: 'sh-kusari-binhalka', name: 'Bin Halka', cat: 'weapon', slot: 'weapon1', rarity: 'legendary', icon: 'fa-infinity',
+          atk: 72, crit: 12, effects: ['+%15 Kritik Hasar', 'Zincir menzili +%25'], lore: 'Altın halkalı efsanevi zincir. Üstatların elinde bin parçaya bölünüp alanı biçer.' },
+        { id: 'sh-tanto-sessiz', name: 'Sessiz Diş Tantō', cat: 'weapon', slot: 'weapon2', rarity: 'common', icon: 'fa-khanda',
+          atk: 10, crit: 4, effects: [], lore: 'Kısa, hafif ve sessiz. Arkadan hançerleme için ilk tercih.' },
+        { id: 'sh-kunai-golge', name: 'Gölge Yankısı Kunai Seti', cat: 'weapon', slot: 'weapon2', rarity: 'rare', icon: 'fa-location-arrow',
+          atk: 20, crit: 9, effects: ['Kunai duvardan seker'], lore: 'Mor ışıklı gölge kunaileri. Duvarlardan seker, ikinci hedefi bulur.' },
+        { id: 'sh-kunai-patlayici', name: 'Patlayıcı Not Kunai', cat: 'weapon', slot: 'weapon2', rarity: 'epic', icon: 'fa-bomb',
+          atk: 30, crit: 6, effects: ['Birkaç saniye sonra patlar'], lore: 'Halkasına kırmızı patlayıcı not bağlı kunai. Arbor madencilerinin tozu ile doludur.' },
+
+        /* --- Zırhlar --- */
+        { id: 'sh-giysi-cirak', name: 'Çırak Shinobi Giysisi', cat: 'armor', slot: 'armor', rarity: 'common', icon: 'fa-shirt',
+          def: 14, hp: 80, effects: [], lore: 'Siyah kumaştan, hafif ve sessiz. Koruması az ama hareket özgürlüğü tam.' },
+        { id: 'sh-cubbe-sis', name: 'Sis Perdesi Cübbesi', cat: 'armor', slot: 'armor', rarity: 'rare', icon: 'fa-cloud',
+          def: 28, hp: 150, effects: ['Hasar alınca %10 ihtimalle sis çıkarır'], lore: 'Svar loncalarının sis tılsımıyla dokunmuş cübbe.' },
+        { id: 'sh-zirh-gece', name: 'Gece Hükümdarı Zırhı', cat: 'armor', slot: 'armor', rarity: 'legendary', icon: 'fa-user-shield',
+          def: 52, hp: 300, crit: 6, effects: ['+%15 Kritik Hasar', '+200 Can', 'Gizliyken hareket hızı +%20'], lore: 'Gölgeler Konseyi\'nin en üst rütbesine verilen mor damarlı sessiz zırh. Pelerini ışığı yutar.' },
+        { id: 'sh-basl-golge', name: 'Gölge Başlığı', cat: 'armor', slot: 'helmet', rarity: 'rare', icon: 'fa-user-ninja',
+          def: 12, crit: 5, hp: 40, effects: ['Fark edilme mesafesi -%10'], lore: 'Yüzü saran kumaş başlık. Gözlerinde mor ışık yanar.' },
+        { id: 'sh-mask-gece', name: 'Gece Maskesi', cat: 'armor', slot: 'helmet', rarity: 'epic', icon: 'fa-mask',
+          def: 20, crit: 9, hp: 80, effects: ['Karanlıkta +%12 kritik şansı'], lore: 'Gece Loncası\'nın yüz maskesi. Takanın adı silinir.' },
+        { id: 'sh-eldiven-zincir', name: 'Zincir Eldiveni', cat: 'armor', slot: 'gloves', rarity: 'common', icon: 'fa-hand-fist',
+          def: 6, atk: 4, effects: [], lore: 'Bileklere sarılı ince zincir. Kusarigama kavrayışını sağlamlaştırır.' },
+        { id: 'sh-eldiven-zehir', name: 'Zehirli Pençe Eldiveni', cat: 'armor', slot: 'gloves', rarity: 'epic', icon: 'fa-hand-sparkles',
+          atk: 14, def: 10, crit: 4, effects: ['Yakın vuruşlar zehirler'], lore: 'Leechen salgısıyla sertleştirilmiş eldiven.' },
+        { id: 'sh-cizme-ruzgar', name: 'Rüzgâr Tabanları', cat: 'armor', slot: 'boots', rarity: 'common', icon: 'fa-shoe-prints',
+          def: 5, hp: 30, effects: [], lore: 'İnce tabanlı, sessiz bez çizmeler.' },
+        { id: 'sh-cizme-sessiz', name: 'Sessiz Adım Çizmeleri', cat: 'armor', slot: 'boots', rarity: 'rare', icon: 'fa-shoe-prints',
+          def: 10, crit: 4, hp: 60, effects: ['Ayak sesi -%30'], lore: 'Yün tabanlı, çatılarda koşmak için dikilmiş çizme.' },
+
+        /* --- Aksesuarlar --- */
+        { id: 'sh-tilsim-gece', name: 'Gece Tılsımı', cat: 'accessory', slot: 'amulet', rarity: 'rare', icon: 'fa-moon',
+          hp: 120, crit: 4, effects: [], lore: 'Hilal biçimli gümüş tılsım. Gecenin koruyucu gücünü taşır.' },
+        { id: 'sh-kolye-kan', name: 'Kan Sözleşmesi Kolyesi', cat: 'accessory', slot: 'amulet', rarity: 'epic', icon: 'fa-droplet',
+          atk: 16, crit: 8, hp: 100, effects: ['Her suikast sonrası kısa süre +%10 hız'], lore: 'Gece Loncası lideriyle verilen kan yeminin mührü.' },
+        { id: 'sh-yuzuk-golge', name: 'Gölge Yüzüğü', cat: 'accessory', slot: 'ring', rarity: 'rare', icon: 'fa-ring',
+          atk: 8, crit: 6, effects: [], lore: 'Mor taşlı, parlamayan siyah yüzük.' },
+        { id: 'sh-yuzuk-gece-muhur', name: 'Gece Hükümdarı Mührü', cat: 'accessory', slot: 'ring', rarity: 'legendary', icon: 'fa-ring',
+          atk: 24, crit: 14, hp: 150, effects: ['+%15 Kritik Hasar', 'Suikast hasarı +%20'], lore: 'Gölgeler Konseyi\'nin hükümdar mührü. Parmağa takılınca kimliğini sessizce siler.' },
+
+        /* --- Sarf malzemeler --- */
+        { id: 'sh-sifa-otu', name: 'Şifa Otu', cat: 'consumable', rarity: 'common', icon: 'fa-leaf', qty: 5,
+          use: '+200 Can', effects: ['Anında +200 Can'], lore: 'Halia şifacılarının kuruttuğu yabani ot demeti.' },
+        { id: 'sh-duman', name: 'Duman Bombası', cat: 'consumable', rarity: 'rare', icon: 'fa-cloud', qty: 3,
+          use: 'Sis perdesi (5 sn)', effects: ['5 sn boyunca görünmezlik'], lore: 'Çatlayınca yoğun duman salan Iga yapımı küre.' },
+        { id: 'sh-panzehir', name: 'Zehir Panzehiri', cat: 'consumable', rarity: 'common', icon: 'fa-flask', qty: 2,
+          use: 'Zehri temizler', effects: ['Zehir ve hastalığı temizler'], lore: 'Leechen zehrine karşı simyacıların karışımı.' }
+    ],
+
+    samuray: [
+        /* --- Silahlar --- */
+        { id: 'sm-katana-cirak', name: 'Çırak Katanası', cat: 'weapon', slot: 'weapon1', rarity: 'common', icon: 'fa-khanda',
+          atk: 20, crit: 3, effects: [], lore: 'Her dojo\'da eğitim için verilen sade ve dengeli demir katana.' },
+        { id: 'sm-katana-akagane', name: 'Akagane Kızıl Dalga', cat: 'weapon', slot: 'weapon1', rarity: 'rare', icon: 'fa-khanda',
+          atk: 40, crit: 7, effects: ['Vuruşlar kanama bırakır'], lore: 'Kızıl sargılı, altın tsubalı samuray katanası.' },
+        { id: 'sm-kanabo', name: 'Demir Ezici Kanabo', cat: 'weapon', slot: 'weapon1', rarity: 'rare', icon: 'fa-hammer',
+          atk: 52, def: 6, crit: 2, effects: ['Zırhlı düşmanlara +%12 hasar'], lore: 'Dikenli demir topuz. Hafif zırhlıları tek vuruşta ezer.' },
+        { id: 'sm-odachi', name: 'Gök Yarıcı Ōdachi', cat: 'weapon', slot: 'weapon1', rarity: 'epic', icon: 'fa-khanda',
+          atk: 68, crit: 4, effects: ['Geniş yay: çevre hasarı +%20'], lore: 'İki elle kullanılan çok uzun savaş kılıcı. Gökyüzünü bile yarar derler.' },
+        { id: 'sm-kanabo-oni', name: 'Oni Kanabo', cat: 'weapon', slot: 'weapon1', rarity: 'epic', icon: 'fa-hammer',
+          atk: 74, def: 10, crit: 3, effects: ['Vuruşta yer sarsıntısı'], lore: 'Oni boynuzu gibi dikenli, kızıl lakeli dev topuz.' },
+        { id: 'sm-katana-ejderha', name: 'Ejderha Dişi', cat: 'weapon', slot: 'weapon1', rarity: 'legendary', icon: 'fa-dragon',
+          atk: 85, crit: 10, effects: ['+%15 Kritik Hasar', 'Her vuruşta alev yalar'], lore: 'Taç Ejderhası\'nın dişinden dövüldüğü söylenen altın bıçaklı efsanevi katana.' },
+        { id: 'sm-wakizashi', name: 'Wakizashi', cat: 'weapon', slot: 'weapon2', rarity: 'common', icon: 'fa-khanda',
+          atk: 8, crit: 3, effects: [], lore: 'Samurayın yedek kısa kılıcı.' },
+        { id: 'sm-kalkan', name: 'Hatamoto Kalkanı', cat: 'weapon', slot: 'weapon2', rarity: 'rare', icon: 'fa-shield-halved',
+          def: 24, hp: 80, effects: ['Siper alırken hasar -%15'], lore: 'Başkent muhafızlarının güçlendirilmiş savaş kalkanı.' },
+        { id: 'sm-kalkan-ejder', name: 'Ejderha Pulu Kalkanı', cat: 'weapon', slot: 'weapon2', rarity: 'epic', icon: 'fa-shield-halved',
+          def: 40, hp: 140, effects: ['Alev hasarı -%25'], lore: 'Wyvern pullarıyla kaplı zümrüt kalkan.' },
+
+        /* --- Zırhlar --- */
+        { id: 'sm-zirh-burran', name: 'Burran Çöl Nöbetçisi', cat: 'armor', slot: 'armor', rarity: 'common', icon: 'fa-user-shield',
+          def: 34, hp: 120, effects: [], lore: 'Çöl surlarının nöbetçilerinin bronz zırhı.' },
+        { id: 'sm-zirh-demir', name: 'Gothenburg Demir Savaşçısı', cat: 'armor', slot: 'armor', rarity: 'rare', icon: 'fa-user-shield',
+          def: 56, hp: 220, effects: ['Sersemletme direnci +%10'], lore: 'Kuzey demircilerinin dövdüğü ağır, perçinli savaş zırhı.' },
+        { id: 'sm-zirh-akagane', name: 'Akagane Kızıl Samuray', cat: 'armor', slot: 'armor', rarity: 'epic', icon: 'fa-user-shield',
+          def: 70, hp: 260, atk: 6, effects: ['+%10 Kritik Hasar'], lore: 'Kızıl lake kaplı klasik samuray zırhı. Sırt sancağı uzaktan tanınır.' },
+        { id: 'sm-zirh-ejderha', name: 'Ejderha Kral Zırhı', cat: 'armor', slot: 'armor', rarity: 'legendary', icon: 'fa-dragon',
+          def: 96, hp: 420, atk: 12, crit: 4, effects: ['+200 Can', 'Alev direnci +%30'], lore: 'Taç Ejderhası\'nın pullarından dövülmüş, altın işlemeli kızıl savaş zırhı.' },
+        { id: 'sm-kabuto-yarim', name: 'Yarım Ay Miğferi', cat: 'armor', slot: 'helmet', rarity: 'common', icon: 'fa-helmet-safety',
+          def: 14, effects: [], lore: 'Burran nöbetçilerinin hilal tepelikli bronz miğferi.' },
+        { id: 'sm-kabuto-oni', name: 'Oni Kabuto', cat: 'armor', slot: 'helmet', rarity: 'rare', icon: 'fa-helmet-safety',
+          def: 24, crit: 3, hp: 60, effects: ['Yakındaki düşmanlar korkar'], lore: 'Şeytan yüzlü maskeli, boynuzlu klasik kabuto.' },
+        { id: 'sm-kabuto-ejder', name: 'Ejderha Tacı Miğferi', cat: 'armor', slot: 'helmet', rarity: 'legendary', icon: 'fa-crown',
+          def: 40, hp: 160, atk: 8, crit: 5, effects: ['+%10 Kritik Hasar'], lore: 'Altın ejderha tepeliği ve kızıl lakesiyle dövülmüş taç miğfer.' },
+        { id: 'sm-kote-demir', name: 'Demir Kote', cat: 'armor', slot: 'gloves', rarity: 'common', icon: 'fa-hand-fist',
+          def: 8, effects: [], lore: 'Önkolu saran demir plakalı eldiven.' },
+        { id: 'sm-kote-kizil', name: 'Kızıl Kote', cat: 'armor', slot: 'gloves', rarity: 'rare', icon: 'fa-hand-fist',
+          def: 14, atk: 6, effects: [], lore: 'Kızıl iplikle bağlı, lake kaplı eldiven.' },
+        { id: 'sm-sune-demir', name: 'Demir Sune-ate', cat: 'armor', slot: 'boots', rarity: 'common', icon: 'fa-shoe-prints',
+          def: 10, hp: 40, effects: [], lore: 'Bacakları saran demir kaplamalı bacaklık.' },
+        { id: 'sm-bacak-ejder', name: 'Ejderha Pulu Bacaklık', cat: 'armor', slot: 'boots', rarity: 'epic', icon: 'fa-shoe-prints',
+          def: 24, hp: 120, effects: ['Hareket hızı +%5'], lore: 'Wyvern pullarından örülmüş bacaklık.' },
+
+        /* --- Aksesuarlar --- */
+        { id: 'sm-tilsim-bushido', name: 'Bushido Tılsımı', cat: 'accessory', slot: 'amulet', rarity: 'rare', icon: 'fa-torii-gate',
+          def: 8, hp: 140, effects: [], lore: 'İdoln Kalesi\'nde verilen bushido yemin tılsımı.' },
+        { id: 'sm-muhur-dojo', name: 'Altın Kılıç Dojo Mühürü', cat: 'accessory', slot: 'amulet', rarity: 'epic', icon: 'fa-scroll',
+          atk: 14, crit: 6, hp: 120, effects: ['Savuşturma penceresi +%10'], lore: 'Başkent\'teki Altın Kılıç Dojo\'sunun mezuniyet mührü.' },
+        { id: 'sm-yuzuk-orman', name: 'Çiçekli Orman Yüzüğü', cat: 'accessory', slot: 'ring', rarity: 'rare', icon: 'fa-ring',
+          hp: 160, def: 6, effects: ['Can yavaşça yenilenir'], lore: 'Pembe çiçek işlemeli, ormanın koruyucu ruhundan bir armağan.' },
+        { id: 'sm-yuzuk-ejder', name: 'Ejderha Tacı Yüzüğü', cat: 'accessory', slot: 'ring', rarity: 'legendary', icon: 'fa-ring',
+          atk: 26, def: 14, crit: 8, hp: 200, effects: ['+%15 Kritik Hasar', '+200 Can'], lore: 'Ejderha soyunun yeminini taşıyan altın yüzük. Takanın nefesi ısınır.' },
+
+        /* --- Sarf malzemeler --- */
+        { id: 'sm-sake', name: 'Kutsal Sake', cat: 'consumable', rarity: 'rare', icon: 'fa-wine-bottle', qty: 3,
+          use: '+300 Can', effects: ['Anında +300 Can'], lore: 'Tesu hasat festivalinin kutsanmış sakesi.' },
+        { id: 'sm-sifa', name: 'Şifa Otu', cat: 'consumable', rarity: 'common', icon: 'fa-leaf', qty: 4,
+          use: '+200 Can', effects: ['Anında +200 Can'], lore: 'Halia şifacılarının kuruttuğu yabani ot demeti.' },
+        { id: 'sm-bileme', name: 'Bileme Taşı', cat: 'consumable', rarity: 'common', icon: 'fa-gem', qty: 2,
+          use: 'Silahı biler (60 sn)', effects: ['60 sn boyunca +%10 hasar'], lore: 'Gothenburg demircilerinin ince taneli bileme taşı.' }
+    ]
+};
+
+const equippedData = {
+    shinobi: { helmet: 'sh-basl-golge', armor: 'sh-giysi-cirak', gloves: 'sh-eldiven-zincir', boots: 'sh-cizme-ruzgar',
+               weapon1: 'sh-kusari-celik', weapon2: 'sh-tanto-sessiz', amulet: null, ring: null },
+    samuray: { helmet: 'sm-kabuto-yarim', armor: 'sm-zirh-burran', gloves: 'sm-kote-demir', boots: 'sm-sune-demir',
+               weapon1: 'sm-katana-cirak', weapon2: 'sm-wakizashi', amulet: null, ring: null }
+};
+
+/* ============================================================
+   ENVANTER FONKSİYONLARI (düzenlemene gerek yok)
+   ============================================================ */
+const INV_MIN_CELLS = 24;   // 6 x 4 ızgara
+const invState = { char: 'shinobi', filter: 'all', selectedId: null, selectedSlot: null, msg: '' };
+
+function invItems() { return inventoryData[invState.char]; }
+function invEq() { return equippedData[invState.char]; }
+function invFind(id) { return invItems().find(function (i) { return i.id === id; }) || null; }
+function invSlotOf(id) {
+    const e = invEq();
+    for (const k in e) { if (e[k] === id) return k; }
+    return null;
+}
+function invBag() {
+    const worn = new Set(Object.values(invEq()).filter(Boolean));
+    return invItems().filter(function (i) { return !worn.has(i.id); });
+}
+function invTotals(char) {
+    const c = char || invState.char;
+    const t = Object.assign({}, INV_CHARS[c].base);
+    Object.values(equippedData[c]).forEach(function (id) {
+        if (!id) return;
+        const it = inventoryData[c].find(function (x) { return x.id === id; });
+        if (!it) return;
+        INV_STATS.forEach(function (s) { t[s.key] += (it[s.key] || 0); });
+    });
+    return t;
+}
+function invSlotLabel(key) {
+    const s = INV_SLOTS.find(function (x) { return x.key === key; });
+    return s ? s.label : '';
+}
+function invCatLabel(key) {
+    const c = INV_CATS.find(function (x) { return x.key === key; });
+    return c ? c.label : '';
+}
+
+/* ----- Karakter silüeti (SVG) ----- */
+function invSilhouette(char) {
+    const shinobi = char === 'shinobi';
+    const armorId = invEq().armor;
+    const armorItem = armorId ? invFind(armorId) : null;
+    const aura = armorItem ? INV_RARITY[armorItem.rarity].color : '#c59b27';
+    const legs = shinobi
+        ? 'M68 192 L62 314 L93 314 L100 198 Z M132 192 L138 314 L107 314 L100 198 Z'
+        : 'M58 194 L46 314 L96 314 L100 200 Z M142 194 L154 314 L104 314 L100 200 Z';
+    const torso = shinobi
+        ? 'M66 98 Q100 86 134 98 L128 198 L72 198 Z'
+        : 'M54 100 Q100 86 146 100 L140 202 L60 202 Z';
+    const armL = shinobi ? 'M66 100 L40 182 L53 188 L77 120 Z' : 'M54 102 L34 184 L48 190 L70 122 Z';
+    const armR = shinobi ? 'M134 100 L160 182 L147 188 L123 120 Z' : 'M146 102 L166 184 L152 190 L130 122 Z';
+    let extras = '';
+    let head = '';
+    if (shinobi) {
+        head = '<path d="M77 64 Q100 16 123 64 L121 82 Q100 94 79 82 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.55)" stroke-width="1.4"/>' +
+               '<rect x="84" y="58" width="32" height="10" rx="3" fill="#0b0a09"/>' +
+               '<rect x="90" y="61" width="7" height="3" fill="' + aura + '"/><rect x="103" y="61" width="7" height="3" fill="' + aura + '"/>';
+        extras = '<path d="M122 96 Q168 92 178 134 Q158 112 124 110 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.5)" stroke-width="1.2"/>' +
+                 '<rect x="70" y="190" width="60" height="12" fill="rgba(200,56,35,.55)"/>';
+    } else {
+        head = '<ellipse cx="100" cy="70" rx="19" ry="23" fill="url(#invBody)" stroke="rgba(197,155,39,.55)" stroke-width="1.4"/>' +
+               '<path d="M70 62 Q100 0 130 62 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.7)" stroke-width="1.6"/>' +
+               '<rect x="64" y="60" width="72" height="7" fill="url(#invBody)" stroke="rgba(197,155,39,.7)" stroke-width="1.2"/>' +
+               '<path d="M86 30 Q70 8 54 4" fill="none" stroke="rgba(197,155,39,.9)" stroke-width="3.2" stroke-linecap="round"/>' +
+               '<path d="M114 30 Q130 8 146 4" fill="none" stroke="rgba(197,155,39,.9)" stroke-width="3.2" stroke-linecap="round"/>' +
+               '<rect x="84" y="73" width="32" height="5" fill="#0b0a09"/>';
+        extras = '<path d="M30 96 L72 86 L70 116 L28 126 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.6)" stroke-width="1.4"/>' +
+                 '<path d="M170 96 L128 86 L130 116 L172 126 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.6)" stroke-width="1.4"/>' +
+                 '<path d="M60 202 H140 L150 244 H50 Z" fill="url(#invBody)" stroke="rgba(197,155,39,.5)" stroke-width="1.2"/>' +
+                 '<rect x="62" y="194" width="76" height="9" fill="rgba(200,56,35,.6)"/>';
+    }
+    return '<svg viewBox="0 0 200 330" class="w-full h-full" preserveAspectRatio="xMidYMid meet">' +
+        '<defs><linearGradient id="invBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4541"/><stop offset="1" stop-color="#0b0a09"/></linearGradient>' +
+        '<radialGradient id="invAura" cx="50%" cy="48%" r="52%"><stop offset="0" stop-color="' + aura + '" stop-opacity=".38"/><stop offset="1" stop-color="' + aura + '" stop-opacity="0"/></radialGradient></defs>' +
+        '<circle cx="100" cy="160" r="118" fill="url(#invAura)"/>' +
+        '<path d="' + legs + '" fill="url(#invBody)" stroke="rgba(197,155,39,.45)" stroke-width="1.2"/>' +
+        '<path d="' + torso + '" fill="url(#invBody)" stroke="rgba(197,155,39,.5)" stroke-width="1.4"/>' +
+        '<path d="' + armL + '" fill="url(#invBody)" stroke="rgba(197,155,39,.45)" stroke-width="1.2"/>' +
+        '<path d="' + armR + '" fill="url(#invBody)" stroke="rgba(197,155,39,.45)" stroke-width="1.2"/>' +
+        '<rect x="92" y="86" width="16" height="16" fill="url(#invBody)"/>' +
+        extras + head + '</svg>';
+}
+
+/* ----- Çizim ----- */
+function renderInvChars() {
+    const box = document.getElementById('invChars');
+    box.innerHTML = Object.keys(INV_CHARS).map(function (k) {
+        const c = INV_CHARS[k];
+        return '<button class="log-sub-btn ' + (k === invState.char ? 'active' : '') + '" onclick="switchChar(\'' + k + '\')"><i class="fa-solid ' + c.icon + ' mr-1.5"></i>' + c.name + '</button>';
+    }).join('');
+    const c = INV_CHARS[invState.char];
+    document.getElementById('invCharName').textContent = c.name;
+    document.getElementById('invCharTitle').textContent = c.title;
+}
+
+function invSlotHtml(slot) {
+    const id = invEq()[slot.key];
+    const it = id ? invFind(id) : null;
+    const sel = it ? invState.selectedId === it.id : invState.selectedSlot === slot.key;
+    return '<button class="inv-slot ' + (it ? 'filled rar-' + it.rarity : '') + (sel ? ' sel' : '') + '" data-slot="' + slot.key + '" onclick="selectSlot(\'' + slot.key + '\')"' +
+        (it ? ' ondblclick="unequipItem(\'' + it.id + '\')"' : '') + ' title="' + slot.label + '">' +
+        '<span class="inv-slot-box"><i class="fa-solid ' + (it ? it.icon : slot.icon) + '"></i></span>' +
+        '<span class="inv-slot-name">' + (it ? it.name : slot.label) + '</span></button>';
+}
+
+function renderPaperdoll() {
+    const left = INV_SLOTS.filter(function (s) { return s.side === 'left'; }).map(invSlotHtml).join('');
+    const right = INV_SLOTS.filter(function (s) { return s.side === 'right'; }).map(invSlotHtml).join('');
+    document.getElementById('invPaperdoll').innerHTML =
+        '<div class="inv-col inv-col-left">' + left + '</div>' +
+        '<div class="inv-sil">' + invSilhouette(invState.char) + '</div>' +
+        '<div class="inv-col inv-col-right">' + right + '</div>';
+}
+
+function renderInvFilters() {
+    const bag = invBag();
+    const box = document.getElementById('invFilters');
+    box.innerHTML = INV_CATS.map(function (c) {
+        const n = c.key === 'all' ? bag.length : bag.filter(function (i) { return i.cat === c.key; }).length;
+        return '<button class="codex-chip ' + (c.key === invState.filter ? 'active' : '') + '" data-filter="' + c.key + '" onclick="setInvFilter(\'' + c.key + '\')"><i class="fa-solid ' + c.icon + ' mr-1"></i>' + c.label + ' <span class="opacity-70">(' + n + ')</span></button>';
+    }).join('');
+}
+
+function renderInvGrid() {
+    const bag = invBag();
+    const list = invState.filter === 'all' ? bag : bag.filter(function (i) { return i.cat === invState.filter; });
+    const total = Math.max(INV_MIN_CELLS, Math.ceil(list.length / 6) * 6);
+    document.getElementById('invCount').textContent = bag.length + ' EŞYA · ' + total + ' SLOT';
+    let html = '';
+    for (let n = 0; n < total; n++) {
+        const it = list[n];
+        if (!it) { html += '<div class="inv-cell empty"></div>'; continue; }
+        const compat = invState.selectedSlot && it.slot === invState.selectedSlot;
+        html += '<button class="inv-cell filled rar-' + it.rarity + (invState.selectedId === it.id ? ' sel' : '') + (compat ? ' compat' : '') + '" data-id="' + it.id + '" onclick="selectItem(\'' + it.id + '\')"' +
+            (it.slot ? ' ondblclick="equipItem(\'' + it.id + '\')"' : '') + ' title="' + it.name + '">' +
+            '<i class="fa-solid ' + it.icon + '"></i>' +
+            (it.qty ? '<span class="inv-qty">x' + it.qty + '</span>' : '') + '</button>';
+    }
+    document.getElementById('invGrid').innerHTML = html;
+}
+
+function invStatRows(it) {
+    const eqId = it.slot ? invEq()[it.slot] : null;
+    const eqItem = eqId && eqId !== it.id ? invFind(eqId) : null;
+    const compare = !!it.slot && invSlotOf(it.id) === null;
+    return INV_STATS.map(function (s) {
+        const v = it[s.key] || 0;
+        const d = compare ? v - (eqItem ? (eqItem[s.key] || 0) : 0) : 0;
+        if (!v && !d) return '';
+        const delta = d ? '<span class="inv-delta ' + (d > 0 ? 'up' : 'down') + '">' + (d > 0 ? '▲ +' : '▼ ') + d + s.suffix + '</span>' : '';
+        return '<div class="flex items-center justify-between text-sm border-b border-stone-300/50 py-1">' +
+            '<span class="text-stone-600"><i class="fa-solid ' + s.icon + ' w-5 text-center text-stone-400"></i>' + s.label + '</span>' +
+            '<span class="font-mono font-bold text-stone-900">' + (v ? '+' + v + s.suffix : '0') + delta + '</span></div>';
+    }).join('');
+}
+
+function renderInvDetail() {
+    const box = document.getElementById('invDetail');
+    box.classList.remove('animate-fade-in');
+    void box.offsetWidth;
+    box.classList.add('animate-fade-in');
+
+    const it = invState.selectedId ? invFind(invState.selectedId) : null;
+
+    if (!it && invState.selectedSlot) {
+        const slot = INV_SLOTS.find(function (s) { return s.key === invState.selectedSlot; });
+        const n = invBag().filter(function (i) { return i.slot === slot.key; }).length;
+        box.innerHTML =
+            '<div class="text-center py-6">' +
+            '<span class="inline-flex w-16 h-16 rounded-lg border-2 border-dashed border-stone-400 items-center justify-center text-2xl text-stone-400 mb-3"><i class="fa-solid ' + slot.icon + '"></i></span>' +
+            '<div class="font-cinzel font-black tracking-wide text-ink-black">' + slot.label.toLocaleUpperCase('tr-TR') + '</div>' +
+            '<div class="text-xs text-stone-500 mt-1">Bu slot boş.</div>' +
+            '<div class="text-xs text-stone-700 mt-3">' + (n ? 'Çantada <b>' + n + '</b> uyumlu eşya var (altın çerçeveyle işaretli).' : 'Çantada bu slota uygun eşya yok.') + '</div></div>';
+        return;
+    }
+    if (!it) {
+        box.innerHTML = '<div class="text-center text-stone-500 text-sm py-10"><i class="fa-solid fa-hand-pointer text-2xl mb-2 text-stone-400"></i><div class="font-cinzel tracking-widest text-xs">BİR EŞYA VEYA SLOT SEÇ</div></div>';
+        return;
+    }
+
+    const r = INV_RARITY[it.rarity];
+    const equipped = invSlotOf(it.id) !== null;
+    let btn = '';
+    if (it.cat === 'consumable') {
+        btn = '<button onclick="useItem(\'' + it.id + '\')" class="w-full py-2 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-cinzel font-bold tracking-widest transition"><i class="fa-solid fa-flask mr-2"></i>KULLAN</button>';
+    } else if (equipped) {
+        btn = '<button onclick="unequipItem(\'' + it.id + '\')" class="w-full py-2 rounded bg-ink-black hover:bg-ink-soft text-amber-200 border border-gold-accent text-xs font-cinzel font-bold tracking-widest transition"><i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>ÇIKAR</button>';
+    } else if (it.slot) {
+        btn = '<button onclick="equipItem(\'' + it.id + '\')" class="w-full py-2 rounded bg-vermilion hover:bg-vermilion-glow text-white text-xs font-cinzel font-bold tracking-widest transition"><i class="fa-solid fa-shirt mr-2"></i>KUŞAN</button>';
+    }
+    const effects = (it.effects || []).map(function (e) {
+        return '<li class="flex items-start space-x-2"><i class="fa-solid fa-wand-sparkles text-amber-600 mt-0.5 w-4 text-center text-xs"></i><span>' + e + '</span></li>';
+    }).join('');
+
+    box.innerHTML =
+        '<div class="flex items-center gap-3 mb-3">' +
+        '<span class="inv-detail-icon rar-' + it.rarity + '"><i class="fa-solid ' + it.icon + '"></i></span>' +
+        '<div class="min-w-0">' +
+        '<div class="text-[10px] font-cinzel font-bold tracking-[0.25em]" style="color:' + r.text + '">' + r.label + '</div>' +
+        '<h2 class="text-lg font-cinzel font-black tracking-wide text-ink-black leading-tight">' + it.name.toLocaleUpperCase('tr-TR') + '</h2>' +
+        '<div class="text-[11px] text-stone-600">' + invCatLabel(it.cat) + (it.slot ? ' · ' + invSlotLabel(it.slot) : '') +
+        (equipped ? ' · <b class="text-emerald-700">KUŞANILDI</b>' : '') + (it.qty ? ' · x' + it.qty : '') + '</div></div></div>' +
+        '<div class="gold-border-box bg-parchment-dark/40 rounded p-3 mb-3">' + (invStatRows(it) || '<div class="text-xs text-stone-500">Bu eşya istatistik vermez.</div>') + '</div>' +
+        (effects ? '<div class="mb-3"><div class="text-[10px] font-cinzel font-bold tracking-widest text-stone-500 mb-1">EK EFSUNLAR</div><ul class="space-y-1 text-sm text-stone-800">' + effects + '</ul></div>' : '') +
+        (it.use ? '<div class="text-xs text-stone-700 mb-3"><i class="fa-solid fa-circle-info text-stone-400 mr-1.5"></i>Etki: <b>' + it.use + '</b></div>' : '') +
+        '<p class="font-serif text-sm text-stone-700 italic leading-relaxed border-l-2 pl-3 mb-4" style="border-color:' + r.color + '">' + it.lore + '</p>' +
+        btn + (invState.msg ? '<div class="mt-3 text-xs text-center font-semibold text-emerald-800 animate-fade-in">' + invState.msg + '</div>' : '');
+}
+
+function renderInvStats(before) {
+    const t = invTotals();
+    const base = INV_CHARS[invState.char].base;
+    document.getElementById('invStats').innerHTML = INV_STATS.map(function (s) {
+        const bonus = t[s.key] - base[s.key];
+        const d = before ? t[s.key] - before[s.key] : 0;
+        return '<div class="inv-stat-cell" data-stat="' + s.key + '">' +
+            '<div class="text-[9px] font-cinzel font-bold tracking-widest text-stone-500"><i class="fa-solid ' + s.icon + ' mr-1"></i>' + s.short + '</div>' +
+            '<div class="inv-stat-val font-mono font-bold text-xl text-ink-black">' + t[s.key] + s.suffix +
+            (d ? '<span class="inv-delta ' + (d > 0 ? 'up' : 'down') + ' animate-fade-in">' + (d > 0 ? '▲ +' : '▼ ') + d + s.suffix + '</span>' : '') + '</div>' +
+            '<div class="text-[10px] text-stone-500">taban ' + base[s.key] + s.suffix + (bonus ? ' · eşya ' + (bonus > 0 ? '+' : '') + bonus + s.suffix : '') + '</div></div>';
+    }).join('');
+}
+
+function renderInventoryView(before) {
+    renderInvChars();
+    renderPaperdoll();
+    renderInvFilters();
+    renderInvGrid();
+    renderInvDetail();
+    renderInvStats(before);
+}
+
+/* ----- Etkileşim ----- */
+function selectItem(id) {
+    playSFX('select');
+    invState.selectedId = id;
+    invState.selectedSlot = null;
+    invState.msg = '';
+    renderInventoryView();
+}
+
+function selectSlot(slotKey) {
+    const id = invEq()[slotKey];
+    if (id) { selectItem(id); return; }
+    playSFX('select');
+    invState.selectedId = null;
+    invState.selectedSlot = slotKey;
+    invState.msg = '';
+    renderInventoryView();
+}
+
+function equipItem(id) {
+    const it = invFind(id);
+    if (!it || !it.slot) return;
+    const before = invTotals();
+    const prevId = invEq()[it.slot];
+    const prev = prevId && prevId !== id ? invFind(prevId) : null;
+    // çantadaki eşya slota taşınır, slottaki eski eşya çantaya döner
+    invEq()[it.slot] = id;
+    playSFX('click');
+    invState.selectedId = id;
+    invState.selectedSlot = null;
+    invState.msg = it.name + ' kuşanıldı.' + (prev ? ' ' + prev.name + ' çantaya döndü.' : '');
+    renderInventoryView(before);
+}
+
+function unequipItem(id) {
+    const slot = invSlotOf(id);
+    if (!slot) return;
+    const it = invFind(id);
+    const before = invTotals();
+    invEq()[slot] = null;
+    playSFX('click');
+    invState.selectedId = id;
+    invState.selectedSlot = null;
+    invState.msg = it.name + ' çantaya taşındı.';
+    renderInventoryView(before);
+}
+
+function useItem(id) {
+    const it = invFind(id);
+    if (!it || it.cat !== 'consumable') return;
+    playSFX('click');
+    it.qty = (it.qty || 1) - 1;
+    invState.msg = it.name + ' kullanıldı' + (it.use ? ': ' + it.use : '') + '.';
+    if (it.qty <= 0) {
+        const arr = invItems();
+        arr.splice(arr.indexOf(it), 1);
+        invState.selectedId = null;
+        invState.msg = it.name + ' bitti.';
+    }
+    renderInventoryView();
+}
+
+function setInvFilter(key) {
+    playSFX('tab');
+    invState.filter = key;
+    renderInvFilters();
+    renderInvGrid();
+}
+
+function switchChar(key) {
+    if (!INV_CHARS[key] || key === invState.char) return;
+    playSFX('tab');
+    invState.char = key;
+    invState.filter = 'all';
+    invState.selectedId = invEq().weapon1 || null;
+    invState.selectedSlot = null;
+    invState.msg = '';
+    renderInventoryView();
+}
+
+function renderInvView() {
+    if (!invState.selectedId && !invState.selectedSlot) invState.selectedId = invEq().weapon1 || null;
+    renderInventoryView();
 }
 
     </script>
